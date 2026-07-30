@@ -48,8 +48,9 @@ const FAQ = () => {
                 Common Questions
               </span>
             </div>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-zinc-900 mb-4 tracking-tight">
-              Frequently asked <span className="text-primary-gradient">questions</span>
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-zinc-900 mb-4 tracking-tight">
+              Frequently asked{" "}
+              <span className="text-primary-gradient">questions</span>
             </h2>
           </div>
           <div className="w-80 rounded-3xl bg-gray-50 p-4 sm:p-6 border border-gray-100 shadow-xl shadow-black/5 font-sans flex flex-col items-start gap-6">
@@ -98,7 +99,9 @@ const FAQItem = ({ question, answer, isOpen, onClick }: any) => {
         </span>
         <div
           className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-            isOpen ? "bg-primary-gradient text-white" : "bg-zinc-100 text-zinc-500"
+            isOpen
+              ? "bg-primary-gradient text-white"
+              : "bg-zinc-100 text-zinc-500"
           }`}
         >
           {isOpen ? <Minus size={18} /> : <Plus size={18} />}

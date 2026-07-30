@@ -31,8 +31,8 @@ const FennixDecision = () => {
 
   return (
     <section id="fennix-decision" className="bg-white pt-20">
-      <div className="max-w-6xl mx-auto px-4 mb- flex justify-center items-center">
-        <h2 className="text-4xl md:text-5xl font-bold text-zinc-900 tracking-tight">
+      <div className="max-w-6xl mx-auto px-4 flex justify-center items-center">
+        <h2 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-zinc-900 tracking-tight">
           Fennix Decision{" "}
           <span className="text-primary-gradient">Intelligence</span>
         </h2>

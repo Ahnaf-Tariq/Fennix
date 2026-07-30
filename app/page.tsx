@@ -10,6 +10,7 @@ import RadialOrbitalTimelineSection from "@/components/radial-orbital-timeline-s
 import { Slider } from "@/components/slider";
 import SplashScreen from "@/components/splash-screen";
 import FennixDecision from "@/components/stacking-cards/fennix-decision";
+import { DeferredAfterSplash } from "@/components/deferred-after-splash";
 
 export default function Home() {
   return (
@@ -18,12 +19,14 @@ export default function Home() {
       <Navbar />
       <Hero />
       <Slider />
-      <RadialOrbitalTimelineSection />
-      <IntelligenceSection />
-      <EasyToGetStarted />
-      <FennixDecision />
-      <IndustriesWeServe />
-      <DecisionIntelligence />
+      <DeferredAfterSplash>
+        <RadialOrbitalTimelineSection />
+        <IntelligenceSection />
+        <EasyToGetStarted />
+        <FennixDecision />
+        <IndustriesWeServe />
+        <DecisionIntelligence />
+      </DeferredAfterSplash>
       <FAQ />
       <Footer />
     </main>

@@ -11,6 +11,21 @@
   --color-card-foreground: var(--card-foreground);
   --color-muted-foreground: var(--muted-foreground);
   --background-image-primary-gradient: var(--gradient-primary);
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+h1,
+h2,
+h3,
+.hero-heading {
+  font-family: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.02em;
 }
 
 :root {
@@ -206,6 +221,12 @@ html.lenis body {
 
 .lenis.lenis-stopped {
   overflow: hidden;
+}
+
+html.splash-active,
+html.splash-active body {
+  overflow: hidden !important;
+  overscroll-behavior: none;
 }
 
 /* Custom gradient scrollbar — html only (single scroll container) */

@@ -158,7 +158,7 @@ function EasyToGetStarted() {
     <section className="relative w-full overflow-hidden bg-white pb-20 pt-10">
       <div className="relative mx-auto max-w-6xl px-4 md:px-6">
         <div className="mb-10 text-center md:mb-14">
-          <h2 className="mb-4 text-4xl font-bold text-zinc-900 md:text-5xl">
+          <h2 className="mb-4 text-4xl sm:text-5xl md:text-6xl font-semibold text-zinc-900 tracking-tight">
             Easy to <span className="text-primary-gradient">Get Started</span>
           </h2>
           <p className="mx-auto max-w-xl text-sm text-zinc-500 md:text-base">

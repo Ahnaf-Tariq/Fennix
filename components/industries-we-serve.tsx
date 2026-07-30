@@ -60,7 +60,7 @@ const IndustriesWeServe = () => {
           </div>
 
           <div className="w-full lg:w-1/2 flex flex-col gap-6 text-center lg:text-left lg:pl-16">
-            <h2 className="text-4xl md:text-6xl font-bold text-zinc-900 leading-tight tracking-tight">
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-zinc-900 leading-tight tracking-tight">
               Industries We <span className="text-primary-gradient">Serve</span>
             </h2>
             <p className="text-zinc-500 text-lg md:text-xl leading-relaxed max-w-xl mx-auto lg:mx-0">

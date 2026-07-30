@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles } from "lucide-react";
+import { onSplashComplete } from "@/lib/splash-lifecycle";
 
 const INDUSTRIES = [
   "Financial Services",
@@ -34,7 +35,7 @@ const WELCOME_MESSAGE = "Hello! Welcome to Fennix 👋";
 const WELCOME_SUBTEXT =
   "Select your industry below to see how our AI layer works for you:";
 const TYPING_DURATION_MS = 1400;
-const WALKTHROUGH_START_DELAY_MS = 480;
+const WALKTHROUGH_START_DELAY_MS = 650;
 
 const bubblePointerClassName =
   "absolute -left-2 top-[3.75rem] h-4 w-4 rotate-45 border-b border-l border-indigo-400/40 bg-slate-900/92 sm:top-[4.25rem] md:top-[4.75rem]";
@@ -156,11 +157,15 @@ function useTypedMessage({
         if (window.speechSynthesis.getVoices().length > 0) {
           void startSpeech();
         } else {
-          window.speechSynthesis.addEventListener("voiceschanged", () => {
-            void startSpeech();
-          }, {
-            once: true,
-          });
+          window.speechSynthesis.addEventListener(
+            "voiceschanged",
+            () => {
+              void startSpeech();
+            },
+            {
+              once: true,
+            },
+          );
         }
       }
 
@@ -181,18 +186,7 @@ function useWalkthroughReady() {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    if (window.__fennixSplashDone) {
-      setIsReady(true);
-      return;
-    }
-
-    function handleSplashComplete() {
-      setIsReady(true);
-    }
-
-    window.addEventListener("fennix:splash-complete", handleSplashComplete);
-    return () =>
-      window.removeEventListener("fennix:splash-complete", handleSplashComplete);
+    return onSplashComplete(() => setIsReady(true));
   }, []);
 
   return isReady;
@@ -394,10 +388,4 @@ export function HeroWalkthrough() {
       )}
     </div>
   );
-}
-
-declare global {
-  interface Window {
-    __fennixSplashDone?: boolean;
-  }
 }

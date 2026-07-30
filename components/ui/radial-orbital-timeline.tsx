@@ -158,7 +158,7 @@ export default function RadialOrbitalTimeline({
     <section className="relative w-full overflow-hidden bg-white py-10 md:py-16">
       <div className="relative mx-auto max-w-6xl px-4 md:px-6">
         <div className="text-center">
-          <h2 className="mb-4 text-4xl font-bold text-zinc-900 md:text-5xl">
+          <h2 className="mb-2 text-4xl sm:text-5xl md:text-6xl font-semibold text-zinc-900 tracking-tight">
             Your Path to{" "}
             <span className="text-primary-gradient">Unified Intelligence</span>
           </h2>
@@ -284,90 +284,87 @@ export default function RadialOrbitalTimeline({
 
                     {isExpanded && (
                       <Card className="absolute top-20 left-1/2 z-30 w-64 -translate-x-1/2 overflow-visible border-primary/20 bg-white shadow-xl shadow-primary/10">
-                            <div className="absolute -top-3 left-1/2 h-3 w-px -translate-x-1/2 bg-primary/30" />
-                            <CardHeader className="pb-2">
-                              <div className="flex items-center justify-between">
-                                <Badge
-                                  className={`px-2 text-xs ${getStatusStyles(item.status)}`}
-                                >
-                                  {item.status === "completed"
-                                    ? "COMPLETE"
-                                    : item.status === "in-progress"
-                                      ? "IN PROGRESS"
-                                      : "PENDING"}
-                                </Badge>
-                                <span className="font-mono text-xs text-zinc-400">
-                                  {item.date}
-                                </span>
-                              </div>
-                              <CardTitle className="mt-2 text-sm text-zinc-900">
-                                {item.title}
-                              </CardTitle>
-                            </CardHeader>
-                            <CardContent className="text-xs text-zinc-600">
-                              <p>{item.content}</p>
+                        <div className="absolute -top-3 left-1/2 h-3 w-px -translate-x-1/2 bg-primary/30" />
+                        <CardHeader className="pb-2">
+                          <div className="flex items-center justify-between">
+                            <Badge
+                              className={`px-2 text-xs ${getStatusStyles(item.status)}`}
+                            >
+                              {item.status === "completed"
+                                ? "COMPLETE"
+                                : item.status === "in-progress"
+                                  ? "IN PROGRESS"
+                                  : "PENDING"}
+                            </Badge>
+                            <span className="font-mono text-xs text-zinc-400">
+                              {item.date}
+                            </span>
+                          </div>
+                          <CardTitle className="mt-2 text-sm text-zinc-900">
+                            {item.title}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="text-xs text-zinc-600">
+                          <p>{item.content}</p>
 
-                              <div className="mt-4 border-t border-zinc-100 pt-3">
-                                <div className="mb-1 flex items-center justify-between text-xs text-zinc-700">
-                                  <span className="flex items-center">
-                                    <Zap
-                                      size={10}
-                                      className="mr-1 text-primary"
-                                    />
-                                    Energy Level
-                                  </span>
-                                  <span className="font-mono text-primary">
-                                    {item.energy}%
-                                  </span>
-                                </div>
-                                <div className="h-1 w-full overflow-hidden rounded-full bg-primary/10">
-                                  <div
-                                    className="h-full bg-linear-to-r from-primary-light to-primary-mid"
-                                    style={{ width: `${item.energy}%` }}
-                                  />
-                                </div>
-                              </div>
+                          <div className="mt-4 border-t border-zinc-100 pt-3">
+                            <div className="mb-1 flex items-center justify-between text-xs text-zinc-700">
+                              <span className="flex items-center">
+                                <Zap size={10} className="mr-1 text-primary" />
+                                Energy Level
+                              </span>
+                              <span className="font-mono text-primary">
+                                {item.energy}%
+                              </span>
+                            </div>
+                            <div className="h-1 w-full overflow-hidden rounded-full bg-primary/10">
+                              <div
+                                className="h-full bg-linear-to-r from-primary-light to-primary-mid"
+                                style={{ width: `${item.energy}%` }}
+                              />
+                            </div>
+                          </div>
 
-                              {item.relatedIds.length > 0 && (
-                                <div className="mt-4 border-t border-zinc-100 pt-3">
-                                  <div className="mb-2 flex items-center">
-                                    <Link
-                                      size={10}
-                                      className="mr-1 text-primary/70"
-                                    />
-                                    <h4 className="text-xs font-medium tracking-wider text-zinc-500 uppercase">
-                                      Connected Nodes
-                                    </h4>
-                                  </div>
-                                  <div className="flex flex-wrap gap-1">
-                                    {item.relatedIds.map((relatedId) => {
-                                      const relatedItem = timelineData.find(
-                                        (i) => i.id === relatedId,
-                                      );
-                                      return (
-                                        <Button
-                                          key={relatedId}
-                                          variant="outline"
-                                          size="sm"
-                                          className="flex h-6 items-center rounded-md border-primary/25 bg-transparent px-2 py-0 text-xs text-primary transition-all hover:bg-primary/10 hover:text-primary"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            toggleItem(relatedId);
-                                          }}
-                                        >
-                                          {relatedItem?.title}
-                                          <ArrowRight
-                                            size={8}
-                                            className="ml-1 text-primary/60"
-                                          />
-                                        </Button>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-                              )}
-                            </CardContent>
-                          </Card>
+                          {item.relatedIds.length > 0 && (
+                            <div className="mt-4 border-t border-zinc-100 pt-3">
+                              <div className="mb-2 flex items-center">
+                                <Link
+                                  size={10}
+                                  className="mr-1 text-primary/70"
+                                />
+                                <h4 className="text-xs font-medium tracking-wider text-zinc-500 uppercase">
+                                  Connected Nodes
+                                </h4>
+                              </div>
+                              <div className="flex flex-wrap gap-1">
+                                {item.relatedIds.map((relatedId) => {
+                                  const relatedItem = timelineData.find(
+                                    (i) => i.id === relatedId,
+                                  );
+                                  return (
+                                    <Button
+                                      key={relatedId}
+                                      variant="outline"
+                                      size="sm"
+                                      className="flex h-6 items-center rounded-md border-primary/25 bg-transparent px-2 py-0 text-xs text-primary transition-all hover:bg-primary/10 hover:text-primary"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        toggleItem(relatedId);
+                                      }}
+                                    >
+                                      {relatedItem?.title}
+                                      <ArrowRight
+                                        size={8}
+                                        className="ml-1 text-primary/60"
+                                      />
+                                    </Button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
                     )}
                   </div>
                 );

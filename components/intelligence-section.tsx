@@ -137,7 +137,7 @@ export default function IntelligenceSection() {
           <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
             Unified intelligence
           </p>
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl lg:text-5xl">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-zinc-900 tracking-tight">
             Data layers into{" "}
             <span className="text-primary-gradient">one model</span>
           </h2>
