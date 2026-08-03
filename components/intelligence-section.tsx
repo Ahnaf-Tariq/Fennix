@@ -128,10 +128,7 @@ export default function IntelligenceSection() {
   }, []);
 
   return (
-    <section
-      ref={sectionRef}
-      className="relative h-screen overflow-hidden bg-[#F8F9FA]"
-    >
+    <section ref={sectionRef} className="relative h-screen overflow-hidden">
       <div className="flex h-full flex-col">
         <div className="relative z-10 mx-auto w-full max-w-3xl shrink-0 px-4 pt-20 text-center md:pt-24">
           <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-primary">

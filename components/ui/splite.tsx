@@ -39,20 +39,27 @@ export function SplineScene({
   }, [isReady, paused]);
 
   return (
-    <div className={cn("relative h-full w-full", className)}>
+    <div className={cn("relative h-full w-full touch-none", className)}>
       <Suspense fallback={null}>
         <Spline
           scene={scene}
           className={cn(
-            "h-full w-full",
+            "h-full w-full [&_canvas]:h-full! [&_canvas]:w-full! [&_canvas]:max-w-full!",
             isReady && visible ? "opacity-100" : "opacity-0",
           )}
           onLoad={(app) => {
             appRef.current = app;
 
+            // Keep canvas sized to its responsive parent.
+            const parent = app.canvas?.parentElement;
+            if (parent) {
+              const { clientWidth, clientHeight } = parent;
+              if (clientWidth > 0 && clientHeight > 0)
+                app.setSize(clientWidth, clientHeight);
+            }
+
             if (pausedRef.current) {
               app.stop();
-              // Keep freezing a few frames so auto-play intro can't sneak ahead.
               let frames = 0;
               const freeze = () => {
                 if (!pausedRef.current || frames >= 12) return;
