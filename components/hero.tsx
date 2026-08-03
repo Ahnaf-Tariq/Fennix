@@ -144,9 +144,9 @@ export default function Hero() {
         </div>
 
         <div className="relative z-20 mt-4 flex min-h-0 flex-1 items-end justify-center overflow-visible sm:mt-6 lg:mt-0">
-          <div className="relative h-[min(46dvh,360px)] w-full max-w-[420px] overflow-visible sm:h-[min(54dvh,480px)] sm:max-w-[560px] md:h-[min(60dvh,560px)] md:max-w-[680px] lg:h-[min(68dvh,620px)] lg:max-w-[820px]">
+          <div className="relative h-[min(52dvh,420px)] w-full max-w-[460px] overflow-visible sm:h-[min(54dvh,480px)] sm:max-w-[560px] md:h-[min(60dvh,560px)] md:max-w-[680px] lg:h-[min(68dvh,620px)] lg:max-w-[820px]">
             <HeroWalkthrough />
-            <div className="absolute -left-[12%] right-[-4%] bottom-0 h-[112%] origin-bottom scale-[0.58] sm:-left-[18%] sm:h-[115%] sm:scale-[0.72] md:-left-[24%] md:scale-[0.84] lg:-left-[28%] lg:h-[118%] lg:scale-[0.92]">
+            <div className="absolute -left-[14%] right-[-6%] bottom-0 h-[112%] origin-bottom scale-[0.72] sm:-left-[18%] sm:h-[115%] sm:scale-[0.72] md:-left-[24%] md:scale-[0.84] lg:-left-[28%] lg:h-[118%] lg:scale-[0.92]">
               {isRobotMounted ? (
                 <SplineScene
                   scene={SPLINE_SCENE}

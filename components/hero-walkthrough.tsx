@@ -285,7 +285,7 @@ export function HeroWalkthrough() {
   return (
     <div className="pointer-events-none absolute inset-0 z-20 overflow-visible">
       {/* Tight to the robot face — right cheek, every breakpoint */}
-      <div className="pointer-events-auto absolute top-[28%] left-[48%] w-[min(48%,200px)] sm:top-[18%] sm:left-[50%] sm:w-[min(46%,260px)] md:top-[12%] md:left-[51%] md:w-[min(44%,300px)] lg:top-[10%] lg:left-[52%] lg:w-[min(46%,360px)]">
+      <div className="pointer-events-auto absolute top-[22%] left-[50%] w-[min(48%,200px)] sm:top-[18%] sm:left-[50%] sm:w-[min(46%,260px)] md:top-[12%] md:left-[51%] md:w-[min(44%,300px)] lg:top-[10%] lg:left-[52%] lg:w-[min(46%,360px)]">
         <AnimatePresence mode="wait">
           {step === "welcome" && (
             <motion.div
