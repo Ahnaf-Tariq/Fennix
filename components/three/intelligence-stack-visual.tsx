@@ -23,7 +23,7 @@ export function IntelligenceStackVisual({
       aria-hidden
     >
       <Canvas
-        camera={{ position: [0, 0, 20], fov: 32 }}
+        camera={{ position: [0, 0, 28], fov: 36, near: 0.1, far: 100 }}
         dpr={[1, 1.75]}
         gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
         style={{ background: "transparent" }}

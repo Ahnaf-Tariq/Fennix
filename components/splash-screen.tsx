@@ -24,6 +24,11 @@ export default function SplashScreen() {
     resetSplashLifecycle();
     document.documentElement.classList.add("splash-active");
     document.body.style.overflow = "hidden";
+
+    // Landing pages should always open from the top after refresh/restore.
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    window.scrollTo(0, 0);
+    getLenisInstance()?.scrollTo(0, { immediate: true });
     getLenisInstance()?.stop();
 
     // Warm Spline JS chunk during logo hold (no WebGL yet).
@@ -77,10 +82,7 @@ export default function SplashScreen() {
   if (phase === "done") return null;
 
   return (
-    <div
-      className="fixed inset-0 z-[9999] flex"
-      aria-hidden={phase === "exit"}
-    >
+    <div className="fixed inset-0 z-[9999] flex" aria-hidden={phase === "exit"}>
       {Array.from({ length: PANEL_COUNT }, (_, index) => {
         const exitDelay = (PANEL_COUNT - 1 - index) * PANEL_STAGGER;
 

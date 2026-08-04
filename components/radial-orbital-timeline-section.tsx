@@ -1,63 +1,54 @@
 "use client";
 
-import { Calendar, Clock, Code, FileText, User } from "lucide-react";
+import {
+  Database,
+  MessageSquareText,
+  TrendingUp,
+  ShieldAlert,
+  Sparkles,
+} from "lucide-react";
 import RadialOrbitalTimeline from "@/components/ui/radial-orbital-timeline";
 
 const timelineData = [
   {
     id: 1,
-    title: "Planning",
-    date: "Jan 2024",
-    content: "Project planning and requirements gathering phase.",
-    category: "Planning",
-    icon: Calendar,
-    relatedIds: [2],
-    status: "completed" as const,
-    energy: 100,
+    title: "Unify Data",
+    content:
+      "Connect databases, warehouses, ERP, CRM, finance, ops, sales, marketing, and cloud sources into one AI layer—so Fennix turns fragmented systems into real-time decision intelligence.",
+    icon: Database,
+    relatedIds: [2, 3],
   },
   {
     id: 2,
-    title: "Design",
-    date: "Feb 2024",
-    content: "UI/UX design and system architecture.",
-    category: "Design",
-    icon: FileText,
-    relatedIds: [1, 3],
-    status: "completed" as const,
-    energy: 90,
+    title: "AI Chat",
+    content:
+      "Query your enterprise data in plain language and get immediate, precise answers with full traceability—secure, role-based responses with context, cause, and next steps.",
+    icon: MessageSquareText,
+    relatedIds: [1, 5],
   },
   {
     id: 3,
-    title: "Development",
-    date: "Mar 2024",
-    content: "Core features implementation and testing.",
-    category: "Development",
-    icon: Code,
-    relatedIds: [2, 4],
-    status: "in-progress" as const,
-    energy: 60,
+    title: "Market Signals",
+    content:
+      "Monitor real-time market trends, macroeconomic shifts, and competitor activity alongside internal data—so leaders see both sides before committing capital.",
+    icon: TrendingUp,
+    relatedIds: [1, 4],
   },
   {
     id: 4,
-    title: "Testing",
-    date: "Apr 2024",
-    content: "User testing and bug fixes.",
-    category: "Testing",
-    icon: User,
+    title: "Risk Detection",
+    content:
+      "Detect patterns and anomalies, forecast financial and operational impact, and predict risks and opportunities early—so teams act before impact compounds.",
+    icon: ShieldAlert,
     relatedIds: [3, 5],
-    status: "pending" as const,
-    energy: 30,
   },
   {
     id: 5,
-    title: "Release",
-    date: "May 2024",
-    content: "Final deployment and release.",
-    category: "Release",
-    icon: Clock,
-    relatedIds: [4],
-    status: "pending" as const,
-    energy: 10,
+    title: "Act Faster",
+    content:
+      "Get clear, decision-ready recommendations—not just charts—so you understand what happened, why it matters, the cost impact, and what to do next.",
+    icon: Sparkles,
+    relatedIds: [2, 4],
   },
 ];
 

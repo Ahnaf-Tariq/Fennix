@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, motion, useSpring } from "framer-motion";
 import Image from "next/image";
 import { useRef, useState } from "react";
+import { SectionTag } from "@/components/ui/section-tag";
 
 const steps = [
   {
@@ -16,14 +17,14 @@ const steps = [
   {
     title: "Analyze",
     description:
-      "Fennix continuously analyzes your data to uncover patterns, bottlenecks, cost drivers, and market shifts insights that would typically require a full team.",
+      "Fennix continuously analyzes your data to uncover patterns, bottlenecks, cost drivers, and market shifts—insights that would typically require a full team.",
     mockup: "/images/Card-2-Analyze.jpg",
     step: "02",
   },
   {
     title: "Act",
     description:
-      "Your team gets clear, decision-ready recommendations not just charts so you understand what's happening, why, the cost impact, and what actions to take.",
+      "Your team gets clear, decision-ready recommendations—not just charts—so you understand what's happening, why, the cost impact, and what actions to take.",
     mockup: "/images/Crad-3-Act.jpg",
     step: "03",
   },
@@ -158,6 +159,7 @@ function EasyToGetStarted() {
     <section className="relative w-full overflow-hidden bg-white pb-20 pt-10">
       <div className="relative mx-auto max-w-6xl px-4 md:px-6">
         <div className="mb-10 text-center md:mb-14">
+          <SectionTag>Start your journey</SectionTag>
           <h2 className="mb-4 text-4xl sm:text-5xl md:text-6xl font-semibold text-zinc-900 tracking-tight">
             Easy to <span className="text-primary-gradient">Get Started</span>
           </h2>

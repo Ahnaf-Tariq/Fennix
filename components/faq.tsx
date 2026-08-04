@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, MessageCircleQuestion, ArrowUpRight } from "lucide-react";
+import { SectionTag } from "@/components/ui/section-tag";
 
 const faqData = [
   {
@@ -36,38 +37,75 @@ const faqData = [
 ];
 
 const FAQ = () => {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const isFaqOpen = openIndex !== null;
+
+  const layoutTransition = {
+    layout: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
+  };
 
   return (
-    <section className="w-full py-24 bg-white">
-      <div className="max-w-7xl mx-auto px-4 md:px-6 flex justify-between gap-10">
-        <div className="flex-1 flex flex-col justify-between">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50/50 px-4 py-1.5 mb-4">
-              <span className="text-xs font-semibold uppercase tracking-wider text-primary-gradient">
-                Common Questions
-              </span>
-            </div>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-zinc-900 mb-4 tracking-tight">
+    <section className="w-full bg-white py-24">
+      <div
+        className={[
+          "mx-auto flex max-w-7xl flex-col gap-10 px-4 md:flex-row md:justify-between md:gap-12 md:px-6",
+          isFaqOpen ? "md:items-stretch" : "md:items-start",
+        ].join(" ")}
+      >
+        <motion.div
+          layout
+          transition={layoutTransition}
+          className={[
+            "flex w-full max-w-md shrink-0 flex-col md:w-[38%]",
+            isFaqOpen ? "justify-between gap-8" : "gap-6",
+          ].join(" ")}
+        >
+          <motion.div layout="position" transition={layoutTransition}>
+            <SectionTag className="mb-4">Common Questions</SectionTag>
+            <h2 className="mb-3 text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl md:text-6xl">
               Frequently asked{" "}
               <span className="text-primary-gradient">questions</span>
             </h2>
-          </div>
-          <div className="w-80 rounded-3xl bg-gray-50 p-4 sm:p-6 border border-gray-100 shadow-xl shadow-black/5 font-sans flex flex-col items-start gap-6">
-            <div className="h-10 w-10 rounded-full bg-[#FF4500] shadow-lg shadow-orange-500/40"></div>
-            <div className="space-y-2.5">
-              <h2 className="text-xl font-bold tracking-tight text-gray-900">
-                Can't find your answer?
-              </h2>
+            <p className="max-w-md text-sm leading-relaxed text-zinc-500 md:text-base">
+              Clear answers on how Fennix works, who it&apos;s for, and how
+              quickly your team can go from connect to insight.
+            </p>
+          </motion.div>
 
-              <button className="cursor-pointer w-full rounded-full bg-[#000000] py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-800 shadow-lg shadow-black/20">
-                Contact us
-              </button>
-            </div>{" "}
-          </div>
-        </div>
+          <motion.div
+            layout
+            transition={layoutTransition}
+            className="relative mt-auto overflow-hidden rounded-2xl border border-[#d7e6f5] bg-white p-4 shadow-[0_1px_0_rgba(20,86,168,0.04)] sm:p-5"
+          >
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full opacity-90"
+              style={{ background: "var(--gradient-hero)" }}
+            />
+            <div className="relative z-10 flex flex-col items-start gap-3.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-white text-primary shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+                <MessageCircleQuestion size={18} strokeWidth={2.1} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-sm font-semibold tracking-tight text-zinc-900">
+                  Can&apos;t find your answer?
+                </h3>
+                <p className="mb-2 mt-1 text-xs leading-snug text-zinc-500">
+                  We&apos;ll walk you through Fennix for your use case.
+                </p>
+                <a
+                  href="mailto:info@fennix.ai"
+                  className="btn-primary btn-glass-shimmer inline-flex shrink-0 items-center gap-1.5 px-3.5 py-2 text-xs"
+                >
+                  Contact
+                  <ArrowUpRight size={14} strokeWidth={2.25} />
+                </a>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
 
-        <div className="space-y-2 flex-1">
+        <div className="min-w-0 flex-1 space-y-2">
           {faqData.map((item, index) => (
             <FAQItem
               key={index}
@@ -92,7 +130,7 @@ const FAQItem = ({ question, answer, isOpen, onClick }: any) => {
     >
       <button
         onClick={onClick}
-        className="w-full flex items-center justify-between p-2 md:p-4 text-left"
+        className="cursor-pointer w-full flex items-center justify-between p-2 md:p-4 text-left"
       >
         <span className="text-lg font-semibold text-zinc-900 pr-8 leading-snug">
           {question}
@@ -114,7 +152,7 @@ const FAQItem = ({ question, answer, isOpen, onClick }: any) => {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
             <div className="px-2 md:px-4 pb-4">

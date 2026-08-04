@@ -1,19 +1,41 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { IntelligenceStackVisual } from "@/components/three";
 import { getLenisInstance } from "@/components/scroll/lenis-instance";
+import { SectionTag } from "@/components/ui/section-tag";
+import {
+  INTELLIGENCE_LAYERS,
+  IntelligenceLayerContent,
+} from "./three/unified-data-layer-scene";
+import { cn } from "@/lib/utils";
 
-const PROGRESS_SPEED = 0.00032;
-const MAX_STEP_PER_TICK = 0.028;
 const SMOOTHING = 0.08;
+const STACK_TOP_RATIO = 0.14;
+const STACK_BOTTOM_RATIO = 0.86;
+const STACK_RIGHT_RATIO = 0.56;
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+interface ConnectorPoints {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+}
 
 export default function IntelligenceSection() {
-  const sectionRef = useRef<HTMLElement>(null);
+  const trackRef = useRef<HTMLElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const canvasWrapRef = useRef<HTMLDivElement>(null);
+  const cardHeaderRef = useRef<HTMLDivElement>(null);
   const targetProgressRef = useRef(0);
   const smoothProgressRef = useRef(0);
-  const touchYRef = useRef<number | null>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [connector, setConnector] = useState<ConnectorPoints | null>(null);
 
   useEffect(() => {
     let rafId = 0;
@@ -23,129 +45,311 @@ export default function IntelligenceSection() {
       const target = targetProgressRef.current;
       const next = current + (target - current) * SMOOTHING;
 
-      if (Math.abs(next - target) < 0.0004) {
-        smoothProgressRef.current = target;
-      } else {
-        smoothProgressRef.current = next;
-      }
+      if (Math.abs(next - target) < 0.0005) smoothProgressRef.current = target;
+      else smoothProgressRef.current = next;
 
       setScrollProgress(smoothProgressRef.current);
+
+      const grid = gridRef.current;
+      const canvasWrap = canvasWrapRef.current;
+      const cardHeader = cardHeaderRef.current;
+
+      if (grid && canvasWrap && cardHeader && window.innerWidth >= 1024) {
+        const gridRect = grid.getBoundingClientRect();
+        const canvasRect = canvasWrap.getBoundingClientRect();
+        const headerRect = cardHeader.getBoundingClientRect();
+
+        const continuousIndex = clamp(
+          smoothProgressRef.current * INTELLIGENCE_LAYERS.length,
+          0,
+          INTELLIGENCE_LAYERS.length - 1,
+        );
+        const layerFraction =
+          (continuousIndex + 0.5) / INTELLIGENCE_LAYERS.length;
+        const yRatio =
+          STACK_TOP_RATIO +
+          layerFraction * (STACK_BOTTOM_RATIO - STACK_TOP_RATIO);
+
+        const x1 =
+          canvasRect.left -
+          gridRect.left +
+          canvasRect.width * STACK_RIGHT_RATIO;
+        const y1 = canvasRect.top - gridRect.top + canvasRect.height * yRatio;
+        const x2 = headerRect.left - gridRect.left;
+        const y2 = headerRect.top - gridRect.top + headerRect.height / 2;
+
+        setConnector((prev) => {
+          if (
+            prev &&
+            Math.abs(prev.x1 - x1) < 0.5 &&
+            Math.abs(prev.y1 - y1) < 0.5 &&
+            Math.abs(prev.x2 - x2) < 0.5 &&
+            Math.abs(prev.y2 - y2) < 0.5
+          ) {
+            return prev;
+          }
+          return { x1, y1, x2, y2 };
+        });
+      } else if (connector !== null) {
+        setConnector(null);
+      }
+
       rafId = requestAnimationFrame(tick);
     };
 
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
-  }, []);
+  }, [connector]);
 
   useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
+    const track = trackRef.current;
+    if (!track) return;
 
-    function holdSection() {
-      const lenis = getLenisInstance();
-      const top =
-        (lenis?.scroll ?? window.scrollY) +
-        section!.getBoundingClientRect().top;
-      if (lenis) lenis.scrollTo(top, { immediate: true });
-      else window.scrollTo(0, top);
+    function updateProgress() {
+      const rect = track!.getBoundingClientRect();
+      const trackHeight = track!.offsetHeight;
+      const viewport = window.innerHeight;
+      const scrollable = Math.max(1, trackHeight - viewport);
+      const scrolled = clamp(-rect.top, 0, scrollable);
+      targetProgressRef.current = scrolled / scrollable;
     }
 
-    function setTargetProgress(next: number) {
-      targetProgressRef.current = Math.min(1, Math.max(0, next));
-      return targetProgressRef.current;
-    }
+    updateProgress();
 
-    function handleScrollIntent(deltaY: number) {
-      if (Math.abs(deltaY) < 0.35) return false;
+    const lenis = getLenisInstance();
+    const onLenisScroll = () => updateProgress();
+    lenis?.on("scroll", onLenisScroll);
 
-      const rect = section!.getBoundingClientRect();
-      const progress = targetProgressRef.current;
-      const coveringViewport =
-        rect.top <= 8 && rect.bottom >= window.innerHeight * 0.85;
+    window.addEventListener("scroll", updateProgress, { passive: true });
+    window.addEventListener("resize", updateProgress);
 
-      // Scroll down — lock at top until model finishes
-      if (deltaY > 0 && progress < 1 && coveringViewport) {
-        holdSection();
-        const step = Math.min(MAX_STEP_PER_TICK, deltaY * PROGRESS_SPEED);
-        setTargetProgress(progress + step);
-        return true;
-      }
-
-      // Scroll up — reverse model first, then release page
-      if (deltaY < 0 && progress > 0 && coveringViewport) {
-        holdSection();
-        const step = Math.max(-MAX_STEP_PER_TICK, deltaY * PROGRESS_SPEED);
-        setTargetProgress(progress + step);
-        return true;
-      }
-
-      return false;
-    }
-
-    function onWheel(event: WheelEvent) {
-      if (handleScrollIntent(event.deltaY)) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-      }
-    }
-
-    function onTouchStart(event: TouchEvent) {
-      touchYRef.current = event.touches[0]?.clientY ?? null;
-    }
-
-    function onTouchMove(event: TouchEvent) {
-      if (touchYRef.current == null) return;
-      const y = event.touches[0]?.clientY ?? touchYRef.current;
-      const deltaY = touchYRef.current - y;
-      touchYRef.current = y;
-      if (handleScrollIntent(deltaY * 2)) event.preventDefault();
-    }
-
-    function onTouchEnd() {
-      touchYRef.current = null;
-    }
-
-    window.addEventListener("wheel", onWheel, {
-      passive: false,
-      capture: true,
-    });
-    window.addEventListener("touchstart", onTouchStart, {
-      passive: true,
-      capture: true,
-    });
-    window.addEventListener("touchmove", onTouchMove, {
-      passive: false,
-      capture: true,
-    });
-    window.addEventListener("touchend", onTouchEnd, { capture: true });
+    const bindTimer = window.setInterval(() => {
+      const next = getLenisInstance();
+      if (!next || next === lenis) return;
+      next.on("scroll", onLenisScroll);
+      window.clearInterval(bindTimer);
+    }, 250);
 
     return () => {
-      window.removeEventListener("wheel", onWheel, true);
-      window.removeEventListener("touchstart", onTouchStart, true);
-      window.removeEventListener("touchmove", onTouchMove, true);
-      window.removeEventListener("touchend", onTouchEnd, true);
+      window.clearInterval(bindTimer);
+      lenis?.off("scroll", onLenisScroll);
+      getLenisInstance()?.off("scroll", onLenisScroll);
+      window.removeEventListener("scroll", updateProgress);
+      window.removeEventListener("resize", updateProgress);
     };
   }, []);
 
+  const activeIndex = useMemo(
+    () =>
+      clamp(
+        Math.floor(scrollProgress * INTELLIGENCE_LAYERS.length),
+        0,
+        INTELLIGENCE_LAYERS.length - 1,
+      ),
+    [scrollProgress],
+  );
+
+  const activeLayer = INTELLIGENCE_LAYERS[activeIndex];
+
+  const pathD = connector
+    ? `M ${connector.x1} ${connector.y1} C ${
+        connector.x1 + (connector.x2 - connector.x1) * 0.4
+      } ${connector.y1}, ${connector.x1 + (connector.x2 - connector.x1) * 0.6} ${
+        connector.y2
+      }, ${connector.x2} ${connector.y2}`
+    : "";
+
   return (
-    <section ref={sectionRef} className="relative h-screen overflow-hidden">
-      <div className="flex h-full flex-col">
-        <div className="relative z-10 mx-auto w-full max-w-3xl shrink-0 px-4 pt-20 text-center md:pt-24">
-          <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-            Unified intelligence
-          </p>
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-zinc-900 tracking-tight">
+    <section ref={trackRef} className="relative z-20 h-[260vh] lg:h-[220vh]">
+      <div className="sticky top-0 z-20 flex h-screen flex-col overflow-visible">
+        <div className="relative z-10 mx-auto w-full max-w-3xl shrink-0 px-4 pt-16 text-center sm:pt-20 md:pt-24">
+          <SectionTag>Unified intelligence</SectionTag>
+          <h2 className="mb-2 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl md:text-5xl lg:text-6xl">
             Data layers into{" "}
             <span className="text-primary-gradient">one model</span>
           </h2>
+          <p className="mx-auto max-w-xl text-sm text-zinc-500 md:text-base">
+            Fennix Decision Intelligence is a platform that helps you make
+            better decisions.
+          </p>
         </div>
 
-        <div className="relative min-h-0 flex-1 px-2 pb-10 pt-20">
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 z-[1] h-120 -translate-y-1/2 bg-[radial-gradient(ellipse_at_center,#dbeafe_0%,transparent_70%)] opacity-70" />
-          <IntelligenceStackVisual
-            className="h-full w-full"
-            scrollProgress={scrollProgress}
-          />
+        <div
+          ref={gridRef}
+          className="relative z-10 grid min-h-0 flex-1 grid-cols-1 items-center gap-2 overflow-visible px-4 pb-6 pt-2 sm:gap-4 sm:pb-8 sm:pt-4 lg:grid-cols-2 lg:gap-8 lg:px-8"
+        >
+          <div className="pointer-events-none absolute inset-x-0 top-1/2 z-0 h-120 -translate-y-1/2 bg-[radial-gradient(ellipse_at_center,#dbeafe_0%,transparent_70%)] opacity-70" />
+
+          {connector ? (
+            <svg
+              className="pointer-events-none absolute inset-0 z-10 hidden h-full w-full lg:block"
+              aria-hidden
+            >
+              <defs>
+                <linearGradient
+                  id="connectorGradient"
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="0%"
+                >
+                  <stop offset="0%" stopColor="#2a7ae8" stopOpacity="0" />
+                  <stop offset="15%" stopColor="#2a7ae8" stopOpacity="0.75" />
+                  <stop offset="85%" stopColor="#2a7ae8" stopOpacity="0.75" />
+                  <stop offset="100%" stopColor="#2a7ae8" stopOpacity="0" />
+                </linearGradient>
+                <radialGradient id="pulseGradient">
+                  <stop offset="0%" stopColor="#e8f2ff" stopOpacity="1" />
+                  <stop offset="40%" stopColor="#8fb8f5" stopOpacity="0.9" />
+                  <stop offset="100%" stopColor="#2a7ae8" stopOpacity="0" />
+                </radialGradient>
+                <filter
+                  id="connectorGlow"
+                  x="-50%"
+                  y="-50%"
+                  width="200%"
+                  height="200%"
+                >
+                  <feGaussianBlur stdDeviation="3.2" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+                <filter
+                  id="pulseGlow"
+                  x="-150%"
+                  y="-150%"
+                  width="400%"
+                  height="400%"
+                >
+                  <feGaussianBlur stdDeviation="2.4" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+
+              <path
+                d={pathD}
+                stroke="url(#connectorGradient)"
+                strokeWidth={2.5}
+                fill="none"
+                filter="url(#connectorGlow)"
+                opacity={0.55}
+              />
+              <path
+                d={pathD}
+                stroke="url(#connectorGradient)"
+                strokeWidth={1.25}
+                fill="none"
+              />
+              <motion.path
+                d={pathD}
+                stroke="#8fb8f5"
+                strokeWidth={1.25}
+                fill="none"
+                strokeDasharray="4 14"
+                animate={{ strokeDashoffset: [0, -72] }}
+                transition={{ duration: 1.6, repeat: Infinity, ease: "linear" }}
+              />
+
+              {[0, 0.5, 1, 1.5].map((delay) => (
+                <circle
+                  key={delay}
+                  r={3.2}
+                  fill="url(#pulseGradient)"
+                  filter="url(#pulseGlow)"
+                >
+                  <animateMotion
+                    dur="2s"
+                    begin={`${delay}s`}
+                    repeatCount="indefinite"
+                    path={pathD}
+                    rotate="auto"
+                  />
+                  <animate
+                    attributeName="opacity"
+                    values="0;1;1;0"
+                    keyTimes="0;0.08;0.85;1"
+                    dur="2s"
+                    begin={`${delay}s`}
+                    repeatCount="indefinite"
+                  />
+                </circle>
+              ))}
+
+              <circle
+                cx={connector.x1}
+                cy={connector.y1}
+                r={3}
+                fill="#2a7ae8"
+                filter="url(#connectorGlow)"
+              />
+              <circle
+                cx={connector.x2}
+                cy={connector.y2}
+                r={2.5}
+                fill="#2a7ae8"
+                filter="url(#connectorGlow)"
+              />
+            </svg>
+          ) : null}
+
+          <div
+            ref={canvasWrapRef}
+            className="relative z-10 h-[45vh] min-h-0 w-full sm:h-[50vh] lg:h-full"
+          >
+            <IntelligenceStackVisual
+              className="h-full w-full"
+              scrollProgress={scrollProgress}
+            />
+          </div>
+
+          <div className="relative z-30 flex h-auto min-h-0 w-full items-center justify-center px-1 lg:h-full">
+            <div className="relative z-30 w-full max-w-md overflow-visible">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeLayer.label}
+                  initial={{ opacity: 0, y: 24, filter: "blur(8px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, y: -24, filter: "blur(8px)" }}
+                  transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                  className="relative z-30 rounded-lg border border-zinc-200/70 bg-white/95 px-3 py-0 shadow-[0_8px_30px_rgba(15,23,42,0.12)] backdrop-blur-md sm:rounded-2xl sm:px-4 sm:py-1 md:px-5 md:py-3"
+                >
+                  <div ref={cardHeaderRef}>
+                    <span className="text-[9px] sm:text-[11px] md:text-xs font-medium uppercase tracking-wider text-primary">
+                      {activeLayer.eyebrow}
+                    </span>
+
+                    <h3 className="mt-0 sm:mt-1 text-sm sm:text-base md:text-xl font-semibold tracking-tight text-zinc-900">
+                      {activeLayer.title}
+                    </h3>
+                  </div>
+
+                  <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs md:text-sm leading-relaxed text-zinc-600">
+                    {activeLayer.description}
+                  </p>
+
+                  <ul className="mt-1 md:mt-2 space-y-1 sm:space-y-1.5">
+                    {activeLayer.points.map((point) => (
+                      <li
+                        key={point}
+                        className="flex items-center gap-1 sm:gap-1.5 md:gap-2.5 text-[9px] sm:text-xs md:text-sm text-zinc-700"
+                      >
+                        <span
+                          aria-hidden
+                          className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
+                        />
+                        <span className="leading-snug">{point}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
         </div>
       </div>
     </section>

@@ -11,12 +11,32 @@ const COMPANY_LINKS = ["Who It's For", "Contact"];
 const LEGAL_LINKS = ["Privacy Policy", "Terms of Service", "Disclaimer"];
 
 const SOCIAL_LINKS = [
-  { Icon: FaLinkedin, label: "LinkedIn" },
-  { Icon: FaYoutube, label: "YouTube" },
-  { Icon: FaTwitter, label: "Twitter" },
-  { Icon: FaPinterest, label: "Pinterest" },
-  { Icon: LuFacebook, label: "Facebook" },
-  { Icon: FaInstagram, label: "Instagram" },
+  {
+    Icon: FaLinkedin,
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/company/fennix-softwaresolutions/",
+  },
+  {
+    Icon: FaYoutube,
+    label: "YouTube",
+    href: "https://www.youtube.com/@Fennix.a",
+  },
+  { Icon: FaTwitter, label: "Twitter", href: "https://x.com/AiFennix" },
+  {
+    Icon: FaPinterest,
+    label: "Pinterest",
+    href: "https://www.pinterest.com/fennixai/",
+  },
+  {
+    Icon: LuFacebook,
+    label: "Facebook",
+    href: "https://www.facebook.com/Fennixai/",
+  },
+  {
+    Icon: FaInstagram,
+    label: "Instagram",
+    href: "https://www.instagram.com/fennix_ai/",
+  },
 ];
 
 const Footer = () => {
@@ -54,25 +74,36 @@ const Footer = () => {
               <div className="rounded-lg border border-white/15 bg-white/10 p-2 text-[#93c5fd] backdrop-blur-sm">
                 <Phone size={18} />
               </div>
-              <span className="text-xs text-white/70">+15122344807</span>
+              <a
+                href="tel:+15122344807"
+                className="cursor-pointer text-xs text-white/70 transition-colors hover:text-white hover:underline"
+              >
+                +15122344807
+              </a>
             </div>
 
             <div className="flex items-center gap-3">
               <div className="rounded-lg border border-white/15 bg-white/10 p-2 text-[#93c5fd] backdrop-blur-sm">
                 <Mail size={18} />
               </div>
-              <span className="text-xs text-white/70">info@fennix.ai</span>
+              <a
+                href="mailto:info@fennix.ai"
+                className="cursor-pointer text-xs text-white/70 transition-colors hover:text-white hover:underline"
+              >
+                info@fennix.ai
+              </a>
             </div>
           </div>
 
           <div className="mt-2">
             <p className="mb-3 text-sm font-semibold text-white">Follow us</p>
             <div className="flex flex-wrap gap-2">
-              {SOCIAL_LINKS.map(({ Icon, label }) => (
+              {SOCIAL_LINKS.map(({ Icon, label, href }) => (
                 <button
                   key={label}
                   type="button"
                   aria-label={label}
+                  onClick={() => window.open(href, "_blank")}
                   className="cursor-pointer rounded-lg border border-white/15 bg-white/10 p-2 text-white/80 backdrop-blur-sm transition-colors hover:border-white/30 hover:bg-white/20 hover:text-white"
                 >
                   <Icon size={18} />

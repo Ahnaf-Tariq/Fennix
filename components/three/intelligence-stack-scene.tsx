@@ -2,7 +2,7 @@
 
 import { ContactShadows, Environment, Text } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import type { Group } from "three";
 
@@ -13,21 +13,31 @@ interface StackBlock {
 }
 
 const BLOCKS: StackBlock[] = [
-  { label: "Live Signals", radius: 3.6, height: 1.6 },
-  { label: "Data Sources", radius: 3.15, height: 1.4 },
-  { label: "Internal Layer", radius: 2.7, height: 1.3 },
-  { label: "External Layer", radius: 2.3, height: 1.2 },
-  { label: "AI Processing", radius: 1.9, height: 1.15 },
-  { label: "Smart Decisions", radius: 1.55, height: 1.05 },
+  { label: "ERP · CRM · Sales Data", radius: 3.85, height: 1.95 },
+  { label: "Finance & Operations", radius: 3.35, height: 1.7 },
+  { label: "Market & Competitor Signals", radius: 2.9, height: 1.55 },
+  { label: "Sentiment & Macro Data", radius: 2.45, height: 1.4 },
+  { label: "Fennix AI Engine", radius: 2.05, height: 1.3 },
+  { label: "Decision Intelligence", radius: 1.7, height: 1.2 },
 ];
 
-const GAP = 0.16;
+const GAP = 0.2;
 const ANGLE_STEP = (Math.PI * 2) / BLOCKS.length;
 
-// How far (in radians) off dead-center-front a label can be before it starts
-// fading. Kept as a smooth ramp (not a hard on/off cut) so nothing "pops".
-const FACING_FULL = 0.35;
-const FACING_FADE_END = 0.95;
+const FACING_FULL = 0.55;
+const FACING_FADE_END = 1.3;
+
+const FADE_IN_START = -0.4;
+const FADE_IN_END = 0.1;
+const FADE_OUT_START = 0.6;
+const FADE_OUT_END = 1.1;
+const CORNER_OFFSET = 0.4;
+
+const ROTATION_SMOOTHING_PER_SEC = 4.2;
+const MAX_ANGULAR_VELOCITY = ANGLE_STEP * 2.2;
+const ROTATION_MIN = -ANGLE_STEP * (BLOCKS.length - 1);
+const ROTATION_MAX = 0;
+const SNAP_EPSILON = 0.0004;
 
 function createBrandGradientTexture() {
   const canvas = document.createElement("canvas");
@@ -51,6 +61,98 @@ function createBrandGradientTexture() {
   return texture;
 }
 
+function ArcLabel({
+  text,
+  centerAngle,
+  radius,
+  fontSize,
+  opacity,
+}: {
+  text: string;
+  centerAngle: number;
+  radius: number;
+  fontSize: number;
+  opacity: number;
+}) {
+  const chars = useMemo(() => text.split(""), [text]);
+
+  const placements = useMemo(() => {
+    const angularWidths = chars.map((ch) => {
+      let widthFactor = 0.62;
+      if (ch === " ") widthFactor = 0.36;
+      else if (ch === "·" || ch === ".") widthFactor = 0.3;
+      else if (ch === "&") widthFactor = 0.76;
+      else if (ch >= "A" && ch <= "Z") widthFactor = 0.7;
+      return (fontSize * widthFactor) / radius;
+    });
+
+    const totalAngle = angularWidths.reduce((sum, a) => sum + a, 0);
+    let cursor = -totalAngle / 2;
+
+    return chars.map((ch, i) => {
+      const w = angularWidths[i];
+      const angle = centerAngle + cursor + w / 2;
+      cursor += w;
+      return { ch, angle };
+    });
+  }, [chars, centerAngle, fontSize, radius]);
+
+  return (
+    <>
+      {placements.map(({ ch, angle }, i) => {
+        if (ch === " ") return null;
+
+        const x = Math.sin(angle) * (radius + 0.05);
+        const z = Math.cos(angle) * (radius + 0.05);
+        const xShadow = Math.sin(angle) * (radius * 0.992 + 0.05);
+        const zShadow = Math.cos(angle) * (radius * 0.992 + 0.05);
+
+        return (
+          <group key={i}>
+            <Text
+              position={[xShadow, -0.02, zShadow]}
+              rotation={[0, angle, 0]}
+              fontSize={fontSize}
+              color="#ffffff"
+              anchorX="center"
+              anchorY="middle"
+              letterSpacing={0.02}
+              fillOpacity={opacity * 0.9}
+              renderOrder={9}
+              depthOffset={-1}
+              material-toneMapped={false}
+              material-depthTest={false}
+            >
+              {ch}
+            </Text>
+
+            <Text
+              position={[x, 0.02, z]}
+              rotation={[0, angle, 0]}
+              fontSize={fontSize}
+              color="#ffffff"
+              anchorX="center"
+              anchorY="middle"
+              letterSpacing={0.02}
+              fillOpacity={opacity}
+              outlineWidth={0.028}
+              outlineBlur={0.006}
+              outlineColor="#020d1c"
+              outlineOpacity={opacity * 0.9}
+              renderOrder={10}
+              depthOffset={-2}
+              material-toneMapped={false}
+              material-depthTest={false}
+            >
+              {ch}
+            </Text>
+          </group>
+        );
+      })}
+    </>
+  );
+}
+
 interface IntelligenceStackSceneProps {
   scrollProgress?: number;
 }
@@ -61,48 +163,66 @@ function DatabaseDisk({
   y,
   scrollProgress,
   total,
-  modelRotationY,
+  rotationRef,
   gradientMap,
+  nextRadius,
 }: {
   block: StackBlock;
   index: number;
   y: number;
   scrollProgress: number;
   total: number;
-  modelRotationY: number;
+  rotationRef: React.MutableRefObject<number>;
   gradientMap: THREE.Texture | null;
+  nextRadius: number | null;
 }) {
-  const segment = 1 / total;
-  const revealStart = index * segment;
-  const local = (scrollProgress - revealStart) / segment;
-  const hasRevealed = scrollProgress >= revealStart - 0.02;
-  const isActive =
-    scrollProgress >= revealStart &&
-    scrollProgress < revealStart + segment + 0.01;
+  const dist = scrollProgress * total - index;
+  const isActive = dist >= 0 && dist < 1.01;
 
-  const textAngle = index * ANGLE_STEP;
-  const worldFacing =
-    (((textAngle + modelRotationY) % (Math.PI * 2)) + Math.PI * 2) %
-    (Math.PI * 2);
-  const angleFromFront = Math.min(worldFacing, Math.PI * 2 - worldFacing);
+  const baseAngle = index * ANGLE_STEP;
 
-  // Continuous fade instead of a boolean flip — removes the visible "pop"
-  // as a label rotates past the front-facing point.
-  const facingFactor =
-    1 -
-    THREE.MathUtils.smoothstep(angleFromFront, FACING_FULL, FACING_FADE_END);
-  const facingFloor = 0.14; // keep labels faintly visible all the way around
+  const lifeProgress = THREE.MathUtils.smoothstep(
+    dist,
+    FADE_IN_START,
+    FADE_OUT_END,
+  );
+  const angleOffset = THREE.MathUtils.lerp(
+    CORNER_OFFSET,
+    -CORNER_OFFSET,
+    lifeProgress,
+  );
+  const textAngle = baseAngle + angleOffset;
 
-  const baseReveal = hasRevealed ? Math.min(1, Math.max(0.75, local * 1.4)) : 0;
-  const textOpacity =
-    baseReveal * Math.max(facingFloor, facingFactor) * (hasRevealed ? 1 : 0);
+  const fadeIn = THREE.MathUtils.smoothstep(dist, FADE_IN_START, FADE_IN_END);
+  const fadeOut =
+    1 - THREE.MathUtils.smoothstep(dist, FADE_OUT_START, FADE_OUT_END);
+  const revealOpacity = Math.min(fadeIn, fadeOut);
 
   const emissiveBoost = isActive ? 0.45 : 0.28;
+  const fontSize = Math.max(0.32, block.radius * 0.175);
+  const facingFloor = 0.32;
 
-  const fontSize = Math.max(0.24, block.radius * 0.12);
-  const maxWidth = block.radius * 1.7;
-  const textX = Math.sin(textAngle) * (block.radius + 0.05);
-  const textZ = Math.cos(textAngle) * (block.radius + 0.05);
+  const [textOpacity, setTextOpacity] = useState(
+    () => revealOpacity * facingFloor,
+  );
+  const lastOpacityRef = useRef(textOpacity);
+
+  useFrame(() => {
+    const worldFacing =
+      (((textAngle + rotationRef.current) % (Math.PI * 2)) + Math.PI * 2) %
+      (Math.PI * 2);
+    const angleFromFront = Math.min(worldFacing, Math.PI * 2 - worldFacing);
+    const facingFactor =
+      1 -
+      THREE.MathUtils.smoothstep(angleFromFront, FACING_FULL, FACING_FADE_END);
+
+    const next = revealOpacity * Math.max(facingFloor, facingFactor);
+
+    if (Math.abs(next - lastOpacityRef.current) > 0.004) {
+      lastOpacityRef.current = next;
+      setTextOpacity(next);
+    }
+  });
 
   return (
     <group position={[0, y, 0]}>
@@ -121,7 +241,6 @@ function DatabaseDisk({
         />
       </mesh>
 
-      {/* Top rim highlight */}
       <mesh position={[0, block.height * 0.505, 0]}>
         <cylinderGeometry
           args={[block.radius * 0.978, block.radius * 0.978, 0.05, 64]}
@@ -135,8 +254,47 @@ function DatabaseDisk({
         />
       </mesh>
 
-      {/* Bottom rim highlight — mirrors the top so each disk reads as a
-          distinct, polished layer rather than a flat cutout. */}
+      {nextRadius != null ? (
+        <>
+          <mesh
+            position={[0, -block.height * 0.5 - GAP * 0.5, 0]}
+            rotation={[-Math.PI / 2, 0, 0]}
+          >
+            <ringGeometry
+              args={[nextRadius * 0.995, block.radius * 0.995, 72]}
+            />
+            <meshStandardMaterial
+              color="#041628"
+              emissive="#0c4a8c"
+              emissiveIntensity={0.22}
+              roughness={0.45}
+              metalness={0.35}
+              side={THREE.DoubleSide}
+            />
+          </mesh>
+          <mesh position={[0, -block.height * 0.5 - GAP * 0.5, 0]}>
+            <cylinderGeometry
+              args={[
+                block.radius * 0.992,
+                nextRadius * 1.01,
+                GAP * 0.95,
+                64,
+                1,
+                true,
+              ]}
+            />
+            <meshStandardMaterial
+              color="#041628"
+              emissive="#0c4a8c"
+              emissiveIntensity={0.18}
+              roughness={0.4}
+              metalness={0.4}
+              side={THREE.DoubleSide}
+            />
+          </mesh>
+        </>
+      ) : null}
+
       <mesh position={[0, -block.height * 0.505, 0]}>
         <cylinderGeometry
           args={[block.radius * 0.978, block.radius * 0.978, 0.035, 64]}
@@ -150,51 +308,13 @@ function DatabaseDisk({
         />
       </mesh>
 
-      {/* Engraved shadow pass: a slightly smaller, recessed, darker copy of
-          the label sitting just behind/below the main text. This is what
-          sells the "carved into the metal" look instead of a decal floating
-          in front of the surface. */}
-      <Text
-        position={[textX * 0.992, -0.014, textZ * 0.992]}
-        rotation={[0, textAngle, 0]}
+      <ArcLabel
+        text={block.label}
+        centerAngle={textAngle}
+        radius={block.radius}
         fontSize={fontSize}
-        color="#ffffff"
-        anchorX="center"
-        anchorY="middle"
-        fillOpacity={textOpacity * 0.85}
-        maxWidth={maxWidth}
-        renderOrder={9}
-        depthOffset={-1}
-        material-toneMapped={false}
-        material-depthTest={false}
-      >
-        {block.label}
-      </Text>
-
-      {/* Main label — the raised, lit face of the engraving. Outline
-          opacity is now tied to textOpacity so the dark outline can never
-          appear on its own before the white fill is ready (this was the
-          cause of the black-flash-then-white effect). */}
-      <Text
-        position={[textX, 0.012, textZ]}
-        rotation={[0, textAngle, 0]}
-        fontSize={fontSize}
-        color="#ffffff"
-        anchorX="center"
-        anchorY="middle"
-        fillOpacity={textOpacity}
-        outlineWidth={0.009}
-        outlineBlur={0.006}
-        outlineColor="#061b31"
-        outlineOpacity={textOpacity * 0.4}
-        maxWidth={maxWidth}
-        renderOrder={10}
-        depthOffset={-2}
-        material-toneMapped={false}
-        material-depthTest={false}
-      >
-        {block.label}
-      </Text>
+        opacity={textOpacity}
+      />
     </group>
   );
 }
@@ -222,37 +342,52 @@ export function IntelligenceStackScene({
     return ys;
   }, []);
 
-  // Bottom-most point of the whole stack, used to place the contact shadow
-  // right under the model regardless of how BLOCKS is tuned later.
   const stackBottom = useMemo(() => {
     const lastIndex = BLOCKS.length - 1;
     return positions[lastIndex] - BLOCKS[lastIndex].height / 2;
   }, [positions]);
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     if (!rootRef.current) return;
-    const targetY = -scrollProgress * ANGLE_STEP * BLOCKS.length;
-    rotationYRef.current += (targetY - rotationYRef.current) * 0.07;
-    rootRef.current.rotation.y = rotationYRef.current;
-    rootRef.current.rotation.x = 0.08;
-  });
 
-  const modelRotationY = -scrollProgress * ANGLE_STEP * BLOCKS.length;
+    const dt = Math.min(delta, 1 / 30);
+
+    const rawTargetY = -scrollProgress * ANGLE_STEP * BLOCKS.length;
+    const targetY = THREE.MathUtils.clamp(
+      rawTargetY,
+      ROTATION_MIN,
+      ROTATION_MAX,
+    );
+
+    const diff = targetY - rotationYRef.current;
+
+    const smoothingFactor = 1 - Math.exp(-ROTATION_SMOOTHING_PER_SEC * dt);
+    let step = diff * smoothingFactor;
+
+    const maxStep = MAX_ANGULAR_VELOCITY * dt;
+    if (Math.abs(step) > maxStep) {
+      step = Math.sign(step) * maxStep;
+    }
+
+    rotationYRef.current += step;
+
+    if (Math.abs(targetY - rotationYRef.current) < SNAP_EPSILON) {
+      rotationYRef.current = targetY;
+    }
+
+    rootRef.current.rotation.y = rotationYRef.current;
+    rootRef.current.rotation.x = 0.04;
+  });
 
   return (
     <>
-      {/* Soft studio reflections so the metal/glass materials actually pick
-          up highlights instead of reading flat. Low intensity keeps the
-          brand colors from washing out. */}
       <Environment preset="city" environmentIntensity={0.35} />
 
-      <group ref={rootRef} scale={1.12} position={[0, 0, 0]}>
+      <group ref={rootRef} scale={1.25} position={[0, 0, 0]}>
         <ambientLight intensity={1.1} />
         <directionalLight position={[5, 8, 4]} intensity={1.1} />
         <directionalLight position={[-4, 2, -3]} intensity={0.35} />
         <pointLight position={[0, 2.5, 4]} intensity={0.9} color="#2a7ae8" />
-        {/* Cool rim light from behind so the model separates from the
-            background and reads as more three-dimensional. */}
         <pointLight position={[0, 1, -5]} intensity={0.55} color="#8fb8f5" />
 
         {BLOCKS.map((block, index) => (
@@ -263,8 +398,11 @@ export function IntelligenceStackScene({
             y={positions[index]}
             scrollProgress={scrollProgress}
             total={BLOCKS.length}
-            modelRotationY={modelRotationY}
+            rotationRef={rotationYRef}
             gradientMap={gradientMap}
+            nextRadius={
+              index < BLOCKS.length - 1 ? BLOCKS[index + 1].radius : null
+            }
           />
         ))}
 

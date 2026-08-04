@@ -3,6 +3,7 @@ import EasyToGetStarted from "@/components/easy-to-get-started";
 import FAQ from "@/components/faq";
 import Footer from "@/components/footer";
 import Hero from "@/components/hero";
+import IntelligenceFunnelSection from "@/components/intelligence-funnel-section";
 import IndustriesWeServe from "@/components/industries-we-serve";
 import IntelligenceSection from "@/components/intelligence-section";
 import Navbar from "@/components/navbar";
@@ -22,6 +23,7 @@ export default function Home() {
       <DeferredAfterSplash>
         <RadialOrbitalTimelineSection />
         <IntelligenceSection />
+        <IntelligenceFunnelSection />
         <EasyToGetStarted />
         <FennixDecision />
         <IndustriesWeServe />

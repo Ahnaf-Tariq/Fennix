@@ -57,6 +57,83 @@ const NODES: NodeConfig[] = [
   },
 ];
 
+export interface IntelligenceLayerContent {
+  label: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  points: string[];
+}
+
+export const INTELLIGENCE_LAYERS: IntelligenceLayerContent[] = [
+  {
+    label: "ERP · CRM · Sales Data",
+    eyebrow: "Layer 01",
+    title: "ERP · CRM · Sales Data",
+    description:
+      "Fennix connects directly to your ERP and CRM, pulling sales pipelines, orders, and customer records into a single live dataset.",
+    points: [
+      "Native connectors for major ERP/CRM platforms",
+      "Real-time sync, no nightly batch jobs",
+    ],
+  },
+  {
+    label: "Finance & Operations",
+    eyebrow: "Layer 02",
+    title: "Finance & Operations",
+    description:
+      "Revenue, cost, and operational metrics feed the model continuously, so every recommendation is grounded in your actual financial position.",
+    points: [
+      "Live P&L and cash-flow ingestion",
+      "Operational KPIs across departments",
+    ],
+  },
+  {
+    label: "Market & Competitor Signals",
+    eyebrow: "Layer 03",
+    title: "Market & Competitor Signals",
+    description:
+      "External market and competitor signals are layered on top of your internal data, giving context to every shift in performance.",
+    points: [
+      "Competitor pricing and positioning feeds",
+      "Category and market-share tracking",
+    ],
+  },
+  {
+    label: "Sentiment & Macro Data",
+    eyebrow: "Layer 04",
+    title: "Sentiment & Macro Data",
+    description:
+      "Macroeconomic indicators and sentiment data give the model a wider lens — so recommendations account for conditions outside your four walls.",
+    points: [
+      "Consumer and B2B sentiment indices",
+      "Macro indicators relevant to your sector",
+    ],
+  },
+  {
+    label: "Fennix AI Engine",
+    eyebrow: "Layer 05",
+    title: "Fennix AI Engine",
+    description:
+      "All prior layers converge in the Fennix AI Engine, which reasons across data types to surface patterns a human analyst would miss.",
+    points: [
+      "Cross-layer correlation modeling",
+      "Continuously retrained on fresh data",
+    ],
+  },
+  {
+    label: "Decision Intelligence",
+    eyebrow: "Layer 06",
+    title: "Decision Intelligence",
+    description:
+      "The top of the stack turns everything below it into concrete, ranked recommendations your team can act on immediately.",
+    points: [
+      "Ranked, confidence-scored recommendations",
+      "One-click hand-off to your workflow tools",
+    ],
+  },
+];
+
 interface UnifiedDataLayerSceneProps {
   scrollProgress?: number;
 }
@@ -105,7 +182,7 @@ export function UnifiedDataLayerScene({
           [number, number, number],
         ],
       })),
-    []
+    [],
   );
 
   useFrame(({ clock }) => {
