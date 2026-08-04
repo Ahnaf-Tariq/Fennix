@@ -946,9 +946,6 @@ export function FunnelChart({
                                 {String(i + 1).padStart(2, "0")}
                               </div>
                               <div className="min-w-0 flex-1">
-                                <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-primary/70 sm:text-[10px]">
-                                  Layer {String(i + 1).padStart(2, "0")}
-                                </p>
                                 <h4 className="text-[13px] font-semibold tracking-tight text-zinc-900 sm:text-[15px]">
                                   {stage.title ?? stage.label}
                                 </h4>
