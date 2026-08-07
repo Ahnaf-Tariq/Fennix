@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Manrope, Outfit } from "next/font/google";
 import "./globals.css";
+import Footer from "@/components/footer";
+import Navbar from "@/components/navbar";
 import LenisScroll from "@/components/scroll/lenis-scroll";
 
 const outfit = Outfit({
@@ -32,7 +34,9 @@ export default function RootLayout({
     >
       <body className="min-h-screen flex flex-col font-sans">
         <LenisScroll />
-        {children}
+        <Navbar />
+        <div className="flex-1">{children}</div>
+        <Footer />
       </body>
     </html>
   );

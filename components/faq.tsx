@@ -1,10 +1,16 @@
-"use client";
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Minus, MessageCircleQuestion, ArrowUpRight } from "lucide-react";
-import { SectionTag } from "@/components/ui/section-tag";
+"use client"
 
-const faqData = [
+import { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Plus, Minus, MessageCircleQuestion, ArrowUpRight } from "lucide-react"
+import { SectionTag } from "@/components/ui/section-tag"
+
+export interface FaqItem {
+  question: string
+  answer: string
+}
+
+const defaultFaqData: FaqItem[] = [
   {
     question: "What is Fennix, and how is it different from BI Dashboard?",
     answer:
@@ -34,15 +40,29 @@ const faqData = [
     answer:
       "Most teams go from connecting their first data source to receiving their first insight within 48 hours. There is no data migration project, no warehouse setup, and no engineering team required. You connect your existing tools and start asking questions.",
   },
-];
+]
 
-const FAQ = () => {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-  const isFaqOpen = openIndex !== null;
+interface FAQProps {
+  items?: FaqItem[]
+  tag?: string
+  titleStart?: string
+  titleHighlight?: string
+  description?: string
+}
+
+const FAQ = ({
+  items = defaultFaqData,
+  tag = "Common Questions",
+  titleStart = "Frequently asked",
+  titleHighlight = "questions",
+  description = "Clear answers on how Fennix works, who it's for, and how quickly your team can go from connect to insight.",
+}: FAQProps) => {
+  const [openIndex, setOpenIndex] = useState<number | null>(null)
+  const isFaqOpen = openIndex !== null
 
   const layoutTransition = {
     layout: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
-  };
+  }
 
   return (
     <section className="w-full bg-white py-24">
@@ -61,14 +81,13 @@ const FAQ = () => {
           ].join(" ")}
         >
           <motion.div layout="position" transition={layoutTransition}>
-            <SectionTag className="mb-4">Common Questions</SectionTag>
+            <SectionTag className="mb-4">{tag}</SectionTag>
             <h2 className="mb-3 text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl md:text-6xl">
-              Frequently asked{" "}
-              <span className="text-primary-gradient">questions</span>
+              {titleStart}{" "}
+              <span className="text-primary-gradient">{titleHighlight}</span>
             </h2>
             <p className="max-w-md text-sm leading-relaxed text-zinc-500 md:text-base">
-              Clear answers on how Fennix works, who it&apos;s for, and how
-              quickly your team can go from connect to insight.
+              {description}
             </p>
           </motion.div>
 
@@ -106,9 +125,9 @@ const FAQ = () => {
         </motion.div>
 
         <div className="min-w-0 flex-1 space-y-2">
-          {faqData.map((item, index) => (
+          {items.map((item, index) => (
             <FAQItem
-              key={index}
+              key={item.question}
               question={item.question}
               answer={item.answer}
               isOpen={openIndex === index}
@@ -118,25 +137,36 @@ const FAQ = () => {
         </div>
       </div>
     </section>
-  );
-};
+  )
+}
 
-const FAQItem = ({ question, answer, isOpen, onClick }: any) => {
+function FAQItem({
+  question,
+  answer,
+  isOpen,
+  onClick,
+}: {
+  question: string
+  answer: string
+  isOpen: boolean
+  onClick: () => void
+}) {
   return (
     <div
-      className={`border rounded-2xl transition-all duration-300 ${
+      className={`rounded-2xl border transition-all duration-300 ${
         isOpen ? "border-primary/20 bg-blue-50/30" : "border-zinc-100 bg-white"
       }`}
     >
       <button
+        type="button"
         onClick={onClick}
-        className="cursor-pointer w-full flex items-center justify-between p-2 md:p-4 text-left"
+        className="flex w-full cursor-pointer items-center justify-between p-2 text-left md:p-4"
       >
-        <span className="text-lg font-semibold text-zinc-900 pr-8 leading-snug">
+        <span className="pr-8 text-lg font-semibold leading-snug text-zinc-900">
           {question}
         </span>
         <div
-          className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors ${
             isOpen
               ? "bg-primary-gradient text-white"
               : "bg-zinc-100 text-zinc-500"
@@ -155,15 +185,15 @@ const FAQItem = ({ question, answer, isOpen, onClick }: any) => {
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <div className="px-2 md:px-4 pb-4">
-              <div className="h-px w-full bg-zinc-100 mb-6" />
-              <p className="text-zinc-600 leading-relaxed">{answer}</p>
+            <div className="px-2 pb-4 md:px-4">
+              <div className="mb-6 h-px w-full bg-zinc-100" />
+              <p className="leading-relaxed text-zinc-600">{answer}</p>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
-  );
-};
+  )
+}
 
-export default FAQ;
+export default FAQ

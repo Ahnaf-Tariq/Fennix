@@ -1,46 +1,54 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import { AnimatePresence, motion } from "framer-motion"
-import { useEffect, useState } from "react"
-import { ArrowRight } from "lucide-react"
-import { NAV_LINKS } from "@/Data/data"
-import { cn } from "@/lib/utils"
+import Image from "next/image";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { ArrowRight } from "lucide-react";
+import { NAV_LINKS } from "@/Data/data";
+import { cn } from "@/lib/utils";
 
 const Navbar = () => {
-  const [isPastHero, setIsPastHero] = useState(false)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const pathname = usePathname();
+  const isHome = pathname === "/";
+  const [isPastHero, setIsPastHero] = useState(!isHome);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    function handleScroll() {
-      const hero = document.getElementById("hero")
-      if (!hero) {
-        setIsPastHero(window.scrollY > 48)
-        return
-      }
-
-      setIsPastHero(hero.getBoundingClientRect().bottom <= 0)
+    if (!isHome) {
+      setIsPastHero(true);
+      return;
     }
 
-    handleScroll()
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+    function handleScroll() {
+      const hero = document.getElementById("hero");
+      if (!hero) {
+        setIsPastHero(window.scrollY > 48);
+        return;
+      }
+
+      setIsPastHero(hero.getBoundingClientRect().bottom <= 0);
+    }
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isHome]);
 
   useEffect(() => {
     if (!isMobileMenuOpen) {
-      document.body.style.overflow = ""
-      return
+      document.body.style.overflow = "";
+      return;
     }
 
-    document.body.style.overflow = "hidden"
+    document.body.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = ""
-    }
-  }, [isMobileMenuOpen])
+      document.body.style.overflow = "";
+    };
+  }, [isMobileMenuOpen]);
 
   function closeMobileMenu() {
-    setIsMobileMenuOpen(false)
+    setIsMobileMenuOpen(false);
   }
 
   return (
@@ -99,8 +107,7 @@ const Navbar = () => {
             type="button"
             className={cn(
               "btn-primary btn-glass-shimmer group hidden items-center gap-2 px-4 py-2.5 lg:inline-flex",
-              isPastHero &&
-                "shadow-[0_12px_28px_-14px_rgba(20,86,168,0.65)]",
+              isPastHero && "shadow-[0_12px_28px_-14px_rgba(20,86,168,0.65)]",
             )}
           >
             Start Your 30-Day Pilot
@@ -243,17 +250,17 @@ const Navbar = () => {
         )}
       </AnimatePresence>
     </header>
-  )
-}
+  );
+};
 
 const NavLink = ({
   link,
   isPastHero,
 }: {
-  link: { href: string; label: string }
-  isPastHero: boolean
+  link: { href: string; label: string };
+  isPastHero: boolean;
 }) => {
-  const [isHovered, setIsHovered] = useState(false)
+  const [isHovered, setIsHovered] = useState(false);
 
   return (
     <a
@@ -303,8 +310,8 @@ const NavLink = ({
         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
       />
     </a>
-  )
-}
+  );
+};
 
 function MenuIcon() {
   return (
@@ -316,7 +323,7 @@ function MenuIcon() {
         strokeLinecap="round"
       />
     </svg>
-  )
+  );
 }
 
 function CloseIcon() {
@@ -329,7 +336,7 @@ function CloseIcon() {
         strokeLinecap="round"
       />
     </svg>
-  )
+  );
 }
 
-export default Navbar
+export default Navbar;
