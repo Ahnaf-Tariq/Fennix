@@ -64,7 +64,7 @@ export default function IndustriesWeServe() {
       className="relative w-full scroll-mt-28 overflow-hidden bg-white py-20 md:py-28"
     >
       <div className="relative mx-auto max-w-7xl px-4 md:px-6">
-        <div className="flex flex-col items-center gap-14 lg:flex-row lg:items-center lg:gap-16">
+        <div className="flex flex-col-reverse items-center gap-14 lg:flex-row lg:items-center lg:gap-16">
           <div className="w-full lg:w-[54%]">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
               {industries.map((industry, index) => (
@@ -78,7 +78,9 @@ export default function IndustriesWeServe() {
           </div>
 
           <div className="flex w-full flex-col gap-1 text-center lg:w-[46%] lg:pl-6 lg:text-left">
-            <SectionTag className="mb-1.5 lg:self-start">Industries</SectionTag>
+            <SectionTag className="mb-1.5 self-center lg:self-start">
+              Industries
+            </SectionTag>
             <h2 className="text-4xl font-semibold leading-tight tracking-tight text-zinc-900 sm:text-5xl md:text-6xl">
               Industries We <span className="text-primary-gradient">Serve</span>
             </h2>
