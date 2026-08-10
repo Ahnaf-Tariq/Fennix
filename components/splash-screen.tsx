@@ -1,7 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import Image from "next/image";
+import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { getLenisInstance } from "@/components/scroll/lenis-instance";
 import {
@@ -11,12 +10,19 @@ import {
 } from "@/lib/splash-lifecycle";
 
 const PANEL_COUNT = 8;
-const HOLD_MS = 1200;
-const PANEL_DURATION = 0.9;
-const PANEL_STAGGER = 0.08;
+const INTRO_MS = 500;
+const ZOOM_MS = 1400;
+const FADE_MS = 280;
+const PANEL_DURATION = 1.05;
+const PANEL_STAGGER = 0.13;
+const LOGO_TOTAL_MS = INTRO_MS + ZOOM_MS + FADE_MS;
+
+const panelEase = [0.76, 0, 0.14, 1] as const;
+
+type SplashPhase = "hold" | "exit" | "done";
 
 export default function SplashScreen() {
-  const [phase, setPhase] = useState<"hold" | "exit" | "done">("hold");
+  const [phase, setPhase] = useState<SplashPhase>("hold");
   const phaseRef = useRef(phase);
   phaseRef.current = phase;
 
@@ -25,25 +31,23 @@ export default function SplashScreen() {
     document.documentElement.classList.add("splash-active");
     document.body.style.overflow = "hidden";
 
-    // Landing pages should always open from the top after refresh/restore.
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
     window.scrollTo(0, 0);
     getLenisInstance()?.scrollTo(0, { immediate: true });
     getLenisInstance()?.stop();
 
-    // Warm Spline JS chunk during logo hold (no WebGL yet).
     void import("@splinetool/react-spline");
 
     let cancelled = false;
-    const holdTimer = window.setTimeout(() => {
+    const exitTimer = window.setTimeout(() => {
       if (cancelled) return;
       setPhase("exit");
       markSplashExiting();
-    }, HOLD_MS);
+    }, INTRO_MS + ZOOM_MS);
 
     return () => {
       cancelled = true;
-      window.clearTimeout(holdTimer);
+      window.clearTimeout(exitTimer);
     };
   }, []);
 
@@ -52,7 +56,7 @@ export default function SplashScreen() {
 
     let cancelled = false;
     const totalMs =
-      (PANEL_DURATION + (PANEL_COUNT - 1) * PANEL_STAGGER) * 1000 + 80;
+      (PANEL_DURATION + (PANEL_COUNT - 1) * PANEL_STAGGER) * 1000 + 120;
 
     const doneTimer = window.setTimeout(() => {
       if (cancelled) return;
@@ -71,7 +75,6 @@ export default function SplashScreen() {
 
   useEffect(() => {
     return () => {
-      // Only unlock if splash is fully finished (avoid Strict Mode flash).
       if (phaseRef.current === "done") {
         document.documentElement.classList.remove("splash-active");
         document.body.style.overflow = "";
@@ -82,50 +85,134 @@ export default function SplashScreen() {
   if (phase === "done") return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex" aria-hidden={phase === "exit"}>
+    <div
+      className="fixed inset-0 z-[9999] flex overflow-hidden"
+      aria-hidden={phase === "exit"}
+    >
+      <style>{`
+        @keyframes fennix-splash-logo {
+          0% {
+            opacity: 0;
+            transform: translate3d(0, 0, 0) scale(0.92);
+          }
+          18% {
+            opacity: 1;
+            transform: translate3d(0, 0, 0) scale(1);
+          }
+          78% {
+            opacity: 1;
+            transform: translate3d(0, 0, 0) scale(3.55);
+          }
+          100% {
+            opacity: 0;
+            transform: translate3d(0, 0, 0) scale(3.8);
+          }
+        }
+
+        .splash-logo-zoom {
+          animation: fennix-splash-logo ${LOGO_TOTAL_MS}ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+          transform-origin: center center;
+          will-change: transform, opacity;
+          backface-visibility: hidden;
+          contain: layout paint;
+        }
+
+        .splash-logo-img {
+          display: block;
+          height: 2.5rem;
+          width: auto;
+          user-select: none;
+          pointer-events: none;
+          filter: brightness(0) invert(1);
+          transform: translateZ(0);
+          backface-visibility: hidden;
+        }
+
+        @media (min-width: 640px) {
+          .splash-logo-img {
+            height: 3rem;
+          }
+        }
+      `}</style>
+
       {Array.from({ length: PANEL_COUNT }, (_, index) => {
         const exitDelay = (PANEL_COUNT - 1 - index) * PANEL_STAGGER;
+        const isLastPanel = index === PANEL_COUNT - 1;
 
         return (
           <motion.div
             key={index}
-            className="h-full flex-1 origin-right bg-[#01060f]"
-            style={{ willChange: "transform" }}
+            className="relative h-full flex-1 bg-[#01060f]"
+            style={{ willChange: phase === "exit" ? "clip-path, transform" : "auto" }}
             initial={false}
-            animate={{ scaleX: phase === "exit" ? 0 : 1 }}
+            animate={{
+              clipPath:
+                phase === "exit"
+                  ? "inset(0 100% 0 0)"
+                  : "inset(0 0% 0 0)",
+              x: phase === "exit" ? "12%" : "0%",
+              opacity: phase === "exit" ? 0.92 : 1,
+            }}
             transition={
               phase === "exit"
                 ? {
-                    duration: PANEL_DURATION,
-                    delay: exitDelay,
-                    ease: [0.83, 0, 0.17, 1],
+                    clipPath: {
+                      duration: PANEL_DURATION,
+                      delay: exitDelay,
+                      ease: panelEase,
+                    },
+                    x: {
+                      duration: PANEL_DURATION,
+                      delay: exitDelay,
+                      ease: panelEase,
+                    },
+                    opacity: {
+                      duration: PANEL_DURATION * 0.55,
+                      delay: exitDelay + PANEL_DURATION * 0.45,
+                      ease: "easeOut",
+                    },
                   }
                 : { duration: 0 }
             }
-          />
+          >
+            {phase === "exit" ? (
+              <div
+                aria-hidden
+                className="absolute inset-0 bg-[linear-gradient(180deg,rgba(42,122,232,0.06)_0%,transparent_38%,rgba(0,0,0,0.35)_100%)]"
+              />
+            ) : null}
+            {!isLastPanel && phase === "exit" ? (
+              <div
+                aria-hidden
+                className="absolute right-0 top-0 h-full w-px bg-white/6"
+              />
+            ) : null}
+          </motion.div>
         );
       })}
 
-      <AnimatePresence>
-        {phase === "hold" && (
-          <motion.div
-            className="pointer-events-none absolute inset-0 flex items-center justify-center"
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <Image
-              src="/images/Fennix-BLACK.png"
-              alt="Fennix"
-              width={160}
-              height={48}
-              priority
-              className="h-10 w-auto brightness-0 invert sm:h-12"
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Covers panel seams only during logo — removed before reveal so hero shows through. */}
+      {phase === "hold" ? (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-[5] bg-[#01060f]"
+        />
+      ) : null}
+
+      <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center overflow-hidden">
+        <div className="splash-logo-zoom">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/Fennix-BLACK.png"
+            alt="Fennix"
+            width={160}
+            height={48}
+            draggable={false}
+            className="splash-logo-img"
+            decoding="sync"
+          />
+        </div>
+      </div>
     </div>
   );
 }
