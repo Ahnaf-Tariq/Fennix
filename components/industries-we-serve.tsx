@@ -59,7 +59,10 @@ const industries: Industry[] = [
 
 export default function IndustriesWeServe() {
   return (
-    <section className="relative w-full overflow-hidden bg-white py-20 md:py-28">
+    <section
+      id="industries"
+      className="relative w-full scroll-mt-28 overflow-hidden bg-white py-20 md:py-28"
+    >
       <div className="relative mx-auto max-w-7xl px-4 md:px-6">
         <div className="flex flex-col items-center gap-14 lg:flex-row lg:items-center lg:gap-16">
           <div className="w-full lg:w-[54%]">

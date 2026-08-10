@@ -1,14 +1,26 @@
 "use client";
 
+import Link from "next/link";
 import { MapPin, Phone, Mail } from "lucide-react";
 import { LuFacebook } from "react-icons/lu";
 import { FaInstagram } from "react-icons/fa6";
 import { FaPinterest, FaTwitter, FaYoutube, FaLinkedin } from "react-icons/fa";
 import Image from "next/image";
 
-const PRODUCT_LINKS = ["Features", "How It Works", "Industries"];
-const COMPANY_LINKS = ["Who It's For", "Contact"];
-const LEGAL_LINKS = ["Privacy Policy", "Terms of Service", "Disclaimer"];
+const PRODUCT_LINKS = [
+  { label: "Features", href: "/#capabilities" },
+  { label: "How It Works", href: "/#how-it-works" },
+  { label: "Industries", href: "/#industries" },
+];
+const COMPANY_LINKS = [
+  { label: "Who It's For", href: "/#who-its-for" },
+  { label: "Contact", href: "/contact" },
+];
+const LEGAL_LINKS = [
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms of Service", href: "/terms" },
+  { label: "Disclaimer", href: "/disclaimer" },
+];
 
 const SOCIAL_LINKS = [
   {
@@ -41,9 +53,31 @@ const SOCIAL_LINKS = [
 
 const Footer = () => {
   return (
-    <footer className="relative overflow-hidden bg-linear-to-br from-primary-mid via-[#062654] to-primary-dark px-6 pb-6 pt-10 font-sans text-white/75">
-      <div className="pointer-events-none absolute -left-24 top-0 h-72 w-72 rounded-full bg-primary-light/20 blur-3xl" />
-      <div className="pointer-events-none absolute -right-16 bottom-0 h-64 w-64 rounded-full bg-[#1a5fbf]/25 blur-3xl" />
+    <footer className="relative overflow-hidden px-6 pb-6 pt-10 font-sans text-white/75">
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(145deg, #0d2f54 0%, #0a2745 45%, #061b31 100%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -left-20 top-0 h-56 w-56 rounded-full opacity-50"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(42,122,232,0.45) 0%, transparent 70%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-16 bottom-0 h-52 w-52 rounded-full opacity-40"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(143,184,245,0.35) 0%, transparent 70%)",
+        }}
+      />
 
       <div className="relative mx-auto grid max-w-7xl grid-cols-1 gap-12 md:grid-cols-10">
         <div className="flex flex-col gap-4 md:col-span-4">
@@ -119,11 +153,13 @@ const Footer = () => {
           </h3>
           <ul className="space-y-3 text-sm">
             {PRODUCT_LINKS.map((link) => (
-              <li
-                key={link}
-                className="cursor-pointer text-white/65 transition-colors hover:text-white"
-              >
-                {link}
+              <li key={link.label}>
+                <Link
+                  href={link.href}
+                  className="text-white/65 transition-colors hover:text-white"
+                >
+                  {link.label}
+                </Link>
               </li>
             ))}
           </ul>
@@ -135,11 +171,13 @@ const Footer = () => {
           </h3>
           <ul className="space-y-3 text-sm">
             {COMPANY_LINKS.map((link) => (
-              <li
-                key={link}
-                className="cursor-pointer text-white/65 transition-colors hover:text-white"
-              >
-                {link}
+              <li key={link.label}>
+                <Link
+                  href={link.href}
+                  className="text-white/65 transition-colors hover:text-white"
+                >
+                  {link.label}
+                </Link>
               </li>
             ))}
           </ul>
@@ -151,11 +189,13 @@ const Footer = () => {
           </h3>
           <ul className="space-y-3 text-sm">
             {LEGAL_LINKS.map((link) => (
-              <li
-                key={link}
-                className="cursor-pointer text-white/65 transition-colors hover:text-white"
-              >
-                {link}
+              <li key={link.label}>
+                <Link
+                  href={link.href}
+                  className="text-white/65 transition-colors hover:text-white"
+                >
+                  {link.label}
+                </Link>
               </li>
             ))}
           </ul>

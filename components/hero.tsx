@@ -133,7 +133,7 @@ export default function Hero() {
                 Start Your 30-Day Pilot
               </button>
               <a
-                href="#fennix-decision"
+                href="#capabilities"
                 className="btn-glass-shimmer inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-3.5 py-2 text-xs font-semibold text-white backdrop-blur-sm sm:px-4 sm:text-sm"
               >
                 Meet Fennix

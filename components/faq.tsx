@@ -65,7 +65,7 @@ const FAQ = ({
   }
 
   return (
-    <section className="w-full bg-white py-24">
+    <section id="who-its-for" className="w-full scroll-mt-28 bg-white py-24">
       <div
         className={[
           "mx-auto flex max-w-7xl flex-col gap-10 px-4 md:flex-row md:justify-between md:gap-12 md:px-6",

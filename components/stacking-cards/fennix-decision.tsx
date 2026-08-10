@@ -31,7 +31,7 @@ const FennixDecision = () => {
   ];
 
   return (
-    <section id="fennix-decision" className="bg-white pt-20">
+    <section id="capabilities" className="scroll-mt-28 bg-white pt-20">
       <div className="max-w-6xl mx-auto px-4 text-center space-y-4">
         <SectionTag className="mb-0">Decision Making</SectionTag>
         <h2 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-zinc-900 tracking-tight">

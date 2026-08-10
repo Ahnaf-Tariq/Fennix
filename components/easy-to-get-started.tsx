@@ -156,7 +156,10 @@ function EasyToGetStarted() {
   const activeStep = activeIndex !== null ? steps[activeIndex] : null;
 
   return (
-    <section className="relative w-full overflow-hidden bg-white pb-20 pt-10">
+    <section
+      id="how-it-works"
+      className="relative w-full scroll-mt-28 overflow-hidden bg-white pb-20 pt-10"
+    >
       <div className="relative mx-auto max-w-6xl px-4 md:px-6">
         <div className="mb-10 text-center md:mb-14">
           <SectionTag>Start your journey</SectionTag>

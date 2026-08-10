@@ -47,18 +47,48 @@ function sanitizeSpeechText(text: string) {
     .trim();
 }
 
+function isEnglishVoice(voice: SpeechSynthesisVoice) {
+  return /^en(-|$)/i.test(voice.lang);
+}
+
 function pickFemaleVoice() {
   if (typeof window === "undefined") return null;
 
-  const voices = window.speechSynthesis.getVoices();
+  const englishVoices = window.speechSynthesis
+    .getVoices()
+    .filter(isEnglishVoice);
+
+  if (englishVoices.length === 0) return null;
+
+  const preferredPatterns = [
+    /google.*english.*female/i,
+    /microsoft.*zira/i,
+    /microsoft.*jenny/i,
+    /microsoft.*sonia/i,
+    /microsoft.*aria/i,
+    /samantha/i,
+    /karen/i,
+    /moira/i,
+    /fiona/i,
+    /victoria/i,
+    /english.*female/i,
+    /female.*english/i,
+  ];
+
+  for (const pattern of preferredPatterns) {
+    const match = englishVoices.find((voice) => pattern.test(voice.name));
+    if (match) return match;
+  }
+
+  const femaleEnglishVoice = englishVoices.find((voice) =>
+    /female/i.test(voice.name),
+  );
+  if (femaleEnglishVoice) return femaleEnglishVoice;
+
   return (
-    voices.find((voice) =>
-      /female|samantha|zira|jenny|aria|google uk english female|microsoft sonia|victoria|karen|moira|fiona/i.test(
-        voice.name,
-      ),
-    ) ??
-    voices.find((voice) => voice.lang.startsWith("en")) ??
-    null
+    englishVoices.find((voice) => voice.lang === "en-US") ??
+    englishVoices.find((voice) => voice.lang.startsWith("en")) ??
+    englishVoices[0]
   );
 }
 
@@ -81,7 +111,7 @@ function speakAssistantMessage({
     const voice = pickFemaleVoice();
 
     if (voice) utterance.voice = voice;
-    utterance.lang = voice?.lang ?? "en-US";
+    utterance.lang = "en-US";
     utterance.pitch = 1.08;
     utterance.volume = 1;
     utterance.rate = 0.96;
@@ -211,6 +241,18 @@ export function HeroWalkthrough() {
 
   useEffect(() => {
     window.speechSynthesis.cancel();
+
+    // Warm up voices so locale-specific defaults are available before first speak.
+    const loadVoices = () => {
+      window.speechSynthesis.getVoices();
+    };
+
+    loadVoices();
+    window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
+
+    return () => {
+      window.speechSynthesis.removeEventListener("voiceschanged", loadVoices);
+    };
   }, []);
 
   useEffect(() => {
