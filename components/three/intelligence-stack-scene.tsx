@@ -39,6 +39,11 @@ const ROTATION_MIN = -ANGLE_STEP * (BLOCKS.length - 1);
 const ROTATION_MAX = 0;
 const SNAP_EPSILON = 0.00025;
 
+const CARD_NAVY = "#0d2f54";
+const CARD_NAVY_MID = "#0a2745";
+const CARD_NAVY_DEEP = "#061b31";
+const CARD_NAVY_LIFT = "#134a78";
+
 function createBrandGradientTexture() {
   const canvas = document.createElement("canvas");
   canvas.width = 512;
@@ -47,11 +52,10 @@ function createBrandGradientTexture() {
   if (!ctx) return null;
 
   const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-  gradient.addColorStop(0, "#062043");
-  gradient.addColorStop(0.22, "#062043");
-  gradient.addColorStop(0.52, "#062043");
-  gradient.addColorStop(0.78, "#062043");
-  gradient.addColorStop(1, "#062043");
+  gradient.addColorStop(0, CARD_NAVY_LIFT);
+  gradient.addColorStop(0.35, CARD_NAVY);
+  gradient.addColorStop(0.7, CARD_NAVY_MID);
+  gradient.addColorStop(1, CARD_NAVY_DEEP);
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -232,12 +236,13 @@ function DatabaseDisk({
         />
         <meshStandardMaterial
           map={gradientMap ?? undefined}
-          color="#ffffff"
-          emissive="#1a5fbf"
-          emissiveIntensity={emissiveBoost}
-          roughness={0.22}
-          metalness={0.48}
-          envMapIntensity={1.1}
+          color={CARD_NAVY}
+          emissive={CARD_NAVY_LIFT}
+          emissiveIntensity={0.55 + emissiveBoost * 0.25}
+          roughness={0.62}
+          metalness={0.08}
+          envMapIntensity={0.35}
+          toneMapped={false}
         />
       </mesh>
 
@@ -246,11 +251,12 @@ function DatabaseDisk({
           args={[block.radius * 0.978, block.radius * 0.978, 0.05, 64]}
         />
         <meshStandardMaterial
-          color="#2a7ae8"
-          emissive="#2a7ae8"
-          emissiveIntensity={0.55}
-          roughness={0.15}
-          metalness={0.5}
+          color={CARD_NAVY_LIFT}
+          emissive={CARD_NAVY}
+          emissiveIntensity={0.45}
+          roughness={0.45}
+          metalness={0.12}
+          toneMapped={false}
         />
       </mesh>
 
@@ -264,12 +270,13 @@ function DatabaseDisk({
               args={[nextRadius * 0.995, block.radius * 0.995, 72]}
             />
             <meshStandardMaterial
-              color="#041628"
-              emissive="#0c4a8c"
-              emissiveIntensity={0.22}
-              roughness={0.45}
-              metalness={0.35}
+              color={CARD_NAVY_MID}
+              emissive={CARD_NAVY}
+              emissiveIntensity={0.35}
+              roughness={0.55}
+              metalness={0.1}
               side={THREE.DoubleSide}
+              toneMapped={false}
             />
           </mesh>
           <mesh position={[0, -block.height * 0.5 - GAP * 0.5, 0]}>
@@ -284,12 +291,13 @@ function DatabaseDisk({
               ]}
             />
             <meshStandardMaterial
-              color="#041628"
-              emissive="#0c4a8c"
-              emissiveIntensity={0.18}
-              roughness={0.4}
-              metalness={0.4}
+              color={CARD_NAVY_MID}
+              emissive={CARD_NAVY}
+              emissiveIntensity={0.3}
+              roughness={0.55}
+              metalness={0.1}
               side={THREE.DoubleSide}
+              toneMapped={false}
             />
           </mesh>
         </>
@@ -300,11 +308,12 @@ function DatabaseDisk({
           args={[block.radius * 0.978, block.radius * 0.978, 0.035, 64]}
         />
         <meshStandardMaterial
-          color="#0c4a8c"
-          emissive="#2a7ae8"
-          emissiveIntensity={0.3}
-          roughness={0.2}
-          metalness={0.5}
+          color={CARD_NAVY_DEEP}
+          emissive={CARD_NAVY}
+          emissiveIntensity={0.35}
+          roughness={0.5}
+          metalness={0.1}
+          toneMapped={false}
         />
       </mesh>
 
@@ -383,14 +392,14 @@ export function IntelligenceStackScene({
 
   return (
     <>
-      <Environment preset="city" environmentIntensity={0.35} />
+      <Environment preset="city" environmentIntensity={0.18} />
 
       <group ref={rootRef} scale={1.25} position={[0, 0, 0]}>
-        <ambientLight intensity={1.1} />
-        <directionalLight position={[5, 8, 4]} intensity={1.1} />
-        <directionalLight position={[-4, 2, -3]} intensity={0.35} />
-        <pointLight position={[0, 2.5, 4]} intensity={0.9} color="#2a7ae8" />
-        <pointLight position={[0, 1, -5]} intensity={0.55} color="#8fb8f5" />
+        <ambientLight intensity={1.55} color="#dbeafe" />
+        <directionalLight position={[5, 8, 4]} intensity={1.35} color="#ffffff" />
+        <directionalLight position={[-4, 3, 2]} intensity={0.7} color="#8fb8f5" />
+        <pointLight position={[0, 2.5, 5]} intensity={1.1} color="#2a7ae8" />
+        <pointLight position={[2, 0, 4]} intensity={0.65} color="#0d2f54" />
 
         {BLOCKS.map((block, index) => (
           <DatabaseDisk

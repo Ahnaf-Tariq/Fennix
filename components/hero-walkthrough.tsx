@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import { RotateCcw, Sparkles } from "lucide-react";
 import { onSplashComplete } from "@/lib/splash-lifecycle";
 
 const INDUSTRIES = [
@@ -394,6 +394,14 @@ export function HeroWalkthrough() {
                 <span className="inline-block rounded-full border border-indigo-500/30 bg-indigo-500/20 px-2 py-0.5 text-[9px] font-semibold text-indigo-300 sm:px-2.5 sm:text-[11px]">
                   {selectedIndustry} Solution
                 </span>
+                <button
+                  type="button"
+                  title="Reset"
+                  className="cursor-pointer rounded-full border border-indigo-500/30 bg-indigo-500/20 p-1"
+                  onClick={() => setStep("welcome")}
+                >
+                  <RotateCcw className="size-3 sm:size-3.5 text-white" />
+                </button>
               </div>
               <p className="text-[10px] leading-relaxed text-slate-200 sm:text-xs md:text-sm">
                 {responseText}

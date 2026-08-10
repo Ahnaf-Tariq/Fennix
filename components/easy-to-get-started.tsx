@@ -11,21 +11,21 @@ const steps = [
     title: "Connect",
     description:
       "Fennix links up with your existing ERP, CRM, HR, Sales, Marketing, Operations, Finance into a single unified decision layer with external data sources.",
-    mockup: "/images/Card-1-Connect.jpg",
+    mockup: "/images/image-1-easy.png",
     step: "01",
   },
   {
     title: "Analyze",
     description:
       "Fennix continuously analyzes your data to uncover patterns, bottlenecks, cost drivers, and market shifts—insights that would typically require a full team.",
-    mockup: "/images/Card-2-Analyze.jpg",
+    mockup: "/images/Web-screens-2.jpg",
     step: "02",
   },
   {
     title: "Act",
     description:
       "Your team gets clear, decision-ready recommendations—not just charts—so you understand what's happening, why, the cost impact, and what actions to take.",
-    mockup: "/images/Crad-3-Act.jpg",
+    mockup: "/images/image-1-easy.png",
     step: "03",
   },
 ];

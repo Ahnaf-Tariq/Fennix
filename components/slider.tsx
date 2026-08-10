@@ -67,9 +67,16 @@ export function Slider() {
     },
   ];
 
-  const forwardTrackData = [...SliderData, ...SliderData];
+  const loopSet = [...SliderData, ...SliderData, ...SliderData, ...SliderData];
+  const forwardTrackData = [...loopSet, ...loopSet];
   const backwardTrackData = [...SliderData].reverse();
-  const backwardLoopData = [...backwardTrackData, ...backwardTrackData];
+  const backwardLoopSet = [
+    ...backwardTrackData,
+    ...backwardTrackData,
+    ...backwardTrackData,
+    ...backwardTrackData,
+  ];
+  const backwardLoopData = [...backwardLoopSet, ...backwardLoopSet];
 
   return (
     <>
@@ -90,7 +97,7 @@ export function Slider() {
             className="flex w-max items-center gap-0.5"
             animate={{ x: ["-50%", "0%"] }}
             transition={{
-              duration: 36,
+              duration: 100,
               repeat: Infinity,
               ease: "linear",
             }}
@@ -104,7 +111,7 @@ export function Slider() {
             className="flex w-max items-center gap-0.5"
             animate={{ x: ["0%", "-50%"] }}
             transition={{
-              duration: 36,
+              duration: 100,
               repeat: Infinity,
               ease: "linear",
             }}
@@ -118,7 +125,7 @@ export function Slider() {
             className="flex w-max items-center gap-0.5"
             animate={{ x: ["-50%", "0%"] }}
             transition={{
-              duration: 34,
+              duration: 100,
               repeat: Infinity,
               ease: "linear",
             }}
