@@ -356,45 +356,68 @@ export default function IntelligenceSection() {
                       cardRefs.current[index] = el;
                     }}
                     className={cn(
-                      "rounded-lg border border-white/10 bg-surface-raised/95 px-3 py-2 shadow-[0_8px_30px_rgba(2,8,20,0.45)] backdrop-blur-md will-change-[opacity,transform] sm:rounded-2xl sm:px-4 sm:py-3 md:px-5 md:py-4",
+                      "relative overflow-hidden rounded-[1.35rem] border border-white/15 px-4 py-3 shadow-[0_22px_50px_-28px_rgba(6,27,49,0.55)] will-change-[opacity,transform] sm:px-5 sm:py-4 md:px-6 md:py-5",
                       index === 0 ? "relative" : "absolute inset-0",
                     )}
                     style={{
                       opacity: index === 0 ? 1 : 0,
                       transform: "translate3d(0, 0, 0)",
+                      background:
+                        "linear-gradient(145deg, #0d2f54 0%, #0a2745 45%, #061b31 100%)",
                     }}
                     aria-hidden={index !== 0}
                   >
-                    <div>
-                      <span className="text-[9px] font-medium uppercase tracking-wider text-[#93c5fd] sm:text-[11px] md:text-xs">
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent_0%,rgba(143,184,245,0.55)_50%,transparent_100%)]"
+                    />
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute -left-14 top-0 h-36 w-36 rounded-full opacity-55"
+                      style={{
+                        background:
+                          "radial-gradient(circle, rgba(42,122,232,0.4) 0%, transparent 70%)",
+                      }}
+                    />
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute -right-12 bottom-0 h-32 w-32 rounded-full opacity-40"
+                      style={{
+                        background:
+                          "radial-gradient(circle, rgba(143,184,245,0.28) 0%, transparent 70%)",
+                      }}
+                    />
+
+                    <div className="relative z-10">
+                      <span className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#8fb8f5] sm:text-[11px] md:text-xs">
                         {layer.eyebrow}
                       </span>
 
-                      <h3 className="mt-0 text-sm font-semibold tracking-tight text-cream sm:mt-1 sm:text-base md:text-xl">
+                      <h3 className="mt-0 text-sm font-semibold tracking-tight text-white sm:mt-1 sm:text-base md:text-xl">
                         {layer.title}
                       </h3>
+
+                      <p className="mt-0.5 text-[10px] leading-relaxed text-white/65 sm:mt-1 sm:text-xs md:text-sm">
+                        {layer.description}
+                      </p>
+
+                      <ul className="mt-1 space-y-1 sm:space-y-1.5 md:mt-2">
+                        {layer.points.map((point) => (
+                          <li
+                            key={point}
+                            className="flex items-center gap-1 text-[9px] text-white/70 sm:gap-1.5 sm:text-xs md:gap-2.5 md:text-sm"
+                          >
+                            <span
+                              aria-hidden
+                              className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#2a7ae8]"
+                            />
+                            <span className="leading-snug text-white/85">
+                              {point}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-
-                    <p className="mt-0.5 text-[10px] leading-relaxed text-cream-muted sm:mt-1 sm:text-xs md:text-sm">
-                      {layer.description}
-                    </p>
-
-                    <ul className="mt-1 space-y-1 sm:space-y-1.5 md:mt-2">
-                      {layer.points.map((point) => (
-                        <li
-                          key={point}
-                          className="flex items-center gap-1 text-[9px] text-cream-muted sm:gap-1.5 sm:text-xs md:gap-2.5 md:text-sm"
-                        >
-                          <span
-                            aria-hidden
-                            className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
-                          />
-                          <span className="leading-snug text-cream/90">
-                            {point}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
                   </div>
                 ))}
               </div>

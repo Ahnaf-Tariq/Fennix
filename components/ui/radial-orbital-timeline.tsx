@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import type { LucideIcon } from "lucide-react";
-import { motion } from "framer-motion";
 import { SectionTag } from "@/components/ui/section-tag";
+import { cn } from "@/lib/utils";
 
 interface TimelineItem {
   id: number;
@@ -17,149 +17,258 @@ interface RadialOrbitalTimelineProps {
   timelineData: TimelineItem[];
 }
 
+function formatNumber(index: number) {
+  return String(index + 1).padStart(2, "0");
+}
+
+function PanelShell({
+  children,
+  className,
+  isActive,
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  isActive?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      className={cn(
+        "group relative overflow-hidden rounded-[1.35rem] border border-white/15 text-left outline-none",
+        "shadow-[0_22px_50px_-28px_rgba(6,27,49,0.55)]",
+        "transition-[flex-grow,box-shadow,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "focus-visible:border-[#8fb8f5]/50 focus-visible:ring-2 focus-visible:ring-[#2a7ae8]/35",
+        isActive &&
+          "border-[#8fb8f5]/35 shadow-[0_28px_60px_-26px_rgba(6,27,49,0.65)]",
+        className,
+      )}
+      {...props}
+    >
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(145deg, #0d2f54 0%, #0a2745 45%, #061b31 100%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 z-20 h-px bg-[linear-gradient(90deg,transparent_0%,rgba(143,184,245,0.55)_50%,transparent_100%)]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -left-16 top-0 h-44 w-44 rounded-full opacity-60"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(42,122,232,0.45) 0%, transparent 70%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-14 bottom-0 h-40 w-40 rounded-full opacity-45"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(143,184,245,0.28) 0%, transparent 70%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500",
+          isActive && "opacity-100",
+        )}
+        style={{
+          background:
+            "linear-gradient(145deg, rgba(42,122,232,0.22) 0%, transparent 48%, rgba(143,184,245,0.08) 100%)",
+        }}
+      />
+      {children}
+    </button>
+  );
+}
+
+function DesktopStrip({
+  timelineData,
+}: {
+  timelineData: TimelineItem[];
+}) {
+  const [activeId, setActiveId] = useState(timelineData[0]?.id ?? null);
+
+  return (
+    <div
+      className="hidden h-[min(54vh,440px)] w-full gap-1.5 md:flex"
+      onMouseLeave={() => setActiveId(timelineData[0]?.id ?? null)}
+    >
+      {timelineData.map((item, index) => {
+        const Icon = item.icon;
+        const isExpanded = activeId === item.id;
+        const number = formatNumber(index);
+
+        return (
+          <PanelShell
+            key={item.id}
+            isActive={isExpanded}
+            aria-expanded={isExpanded}
+            aria-label={item.title}
+            onMouseEnter={() => setActiveId(item.id)}
+            onFocus={() => setActiveId(item.id)}
+            className="flex h-full min-w-0 flex-col"
+            style={{
+              flexGrow: isExpanded ? 5.5 : 1,
+              flexBasis: 0,
+            }}
+          >
+            <span className="absolute right-3 top-3 z-10 font-semibold tracking-[0.16em] text-white/40 sm:right-4 sm:top-4 sm:text-sm">
+              {number}
+            </span>
+
+            <span
+              aria-hidden
+              className="pointer-events-none absolute bottom-[-0.35rem] left-1/2 z-0 -translate-x-1/2 text-[5.5rem] font-semibold leading-none text-white/5"
+            >
+              {number}
+            </span>
+
+            {/* Collapsed */}
+            <div
+              className={cn(
+                "relative z-10 flex h-full flex-col items-center justify-between px-2 py-9 transition-opacity duration-300",
+                isExpanded ? "pointer-events-none opacity-0" : "opacity-100",
+              )}
+              aria-hidden={isExpanded}
+            >
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-[#8fb8f5] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-sm">
+                <Icon size={20} strokeWidth={2.1} />
+              </span>
+              <span
+                className="mt-auto text-[13px] font-semibold tracking-tight whitespace-nowrap text-white/85"
+                style={{
+                  writingMode: "vertical-rl",
+                  transform: "rotate(180deg)",
+                }}
+              >
+                {item.title}
+              </span>
+            </div>
+
+            {/* Expanded */}
+            <div
+              className={cn(
+                "absolute inset-0 z-10 flex flex-col justify-between p-5 sm:p-6",
+                "transition-opacity duration-300",
+                isExpanded ? "opacity-100" : "pointer-events-none opacity-0",
+              )}
+            >
+              <div className="flex items-start justify-between gap-3 pr-10">
+                <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/20 bg-white/12 text-white shadow-[0_14px_28px_-14px_rgba(0,0,0,0.45)] backdrop-blur-sm">
+                  <Icon size={22} strokeWidth={2.05} />
+                </span>
+                <span className="mt-1 rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#8fb8f5] backdrop-blur-sm">
+                  Capability
+                </span>
+              </div>
+
+              <div className="max-w-md pr-4">
+                <div
+                  aria-hidden
+                  className="mb-4 h-px w-16 bg-[linear-gradient(90deg,#8fb8f5_0%,transparent_100%)]"
+                />
+                <h3 className="mb-2.5 text-2xl font-semibold tracking-tight text-white sm:text-[1.7rem]">
+                  {item.title}
+                </h3>
+                <p className="text-sm leading-relaxed text-white/65 sm:text-[15px] sm:leading-7">
+                  {item.content}
+                </p>
+              </div>
+            </div>
+          </PanelShell>
+        );
+      })}
+    </div>
+  );
+}
+
+function MobileAccordion({
+  timelineData,
+}: {
+  timelineData: TimelineItem[];
+}) {
+  const [activeId, setActiveId] = useState<number | null>(
+    timelineData[0]?.id ?? null,
+  );
+
+  return (
+    <div className="flex flex-col gap-2.5 md:hidden">
+      {timelineData.map((item, index) => {
+        const Icon = item.icon;
+        const isExpanded = activeId === item.id;
+        const number = formatNumber(index);
+
+        return (
+          <PanelShell
+            key={item.id}
+            isActive={!!isExpanded}
+            aria-expanded={isExpanded}
+            onClick={() =>
+              setActiveId((current) => (current === item.id ? null : item.id))
+            }
+            className={cn(
+              "w-full",
+              "transition-[max-height] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+              isExpanded ? "max-h-80" : "max-h-[84px]",
+            )}
+          >
+            <div className="relative z-10 flex items-center gap-3.5 px-4 py-4">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-white/12 text-[#8fb8f5] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-sm">
+                <Icon size={18} strokeWidth={2.05} />
+              </span>
+              <span className="min-w-0 flex-1 text-sm font-semibold tracking-tight text-white">
+                {item.title}
+              </span>
+              <span className="text-xs font-semibold tracking-[0.16em] text-white/40">
+                {number}
+              </span>
+            </div>
+
+            <div
+              className={cn(
+                "relative z-10 overflow-hidden px-4 transition-opacity duration-300",
+                isExpanded
+                  ? "pb-5 opacity-100"
+                  : "pointer-events-none h-0 pb-0 opacity-0",
+              )}
+            >
+              <div
+                aria-hidden
+                className="mb-3 ml-12 h-px w-12 bg-[linear-gradient(90deg,#8fb8f5_0%,transparent_100%)]"
+              />
+              <p className="pl-12 text-sm leading-relaxed text-white/65">
+                {item.content}
+              </p>
+            </div>
+          </PanelShell>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function RadialOrbitalTimeline({
   timelineData,
 }: RadialOrbitalTimelineProps) {
-  const [expandedItems, setExpandedItems] = useState<Record<number, boolean>>(
-    {},
-  );
-  const [viewMode] = useState<"orbital">("orbital");
-  const [rotationAngle, setRotationAngle] = useState(0);
-  const [autoRotate, setAutoRotate] = useState(true);
-  const [pulseEffect, setPulseEffect] = useState<Record<number, boolean>>({});
-  const [centerOffset] = useState({ x: 0, y: 0 });
-  const [activeNodeId, setActiveNodeId] = useState<number | null>(null);
-  const [orbitRadius, setOrbitRadius] = useState(210);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const orbitRef = useRef<HTMLDivElement>(null);
-  const nodeRefs = useRef<Record<number, HTMLDivElement | null>>({});
-  const rotationAngleRef = useRef(0);
-
-  useEffect(() => {
-    function updateOrbitRadius() {
-      const width = window.innerWidth;
-      if (width < 380) setOrbitRadius(112);
-      else if (width < 480) setOrbitRadius(128);
-      else if (width < 640) setOrbitRadius(148);
-      else if (width < 768) setOrbitRadius(172);
-      else if (width < 1024) setOrbitRadius(190);
-      else setOrbitRadius(210);
-    }
-
-    updateOrbitRadius();
-    window.addEventListener("resize", updateOrbitRadius);
-    return () => window.removeEventListener("resize", updateOrbitRadius);
-  }, []);
-
-
-  function handleContainerClick(e: React.MouseEvent<HTMLDivElement>) {
-    if (e.target === containerRef.current || e.target === orbitRef.current) {
-      setExpandedItems({});
-      setActiveNodeId(null);
-      setPulseEffect({});
-      setAutoRotate(true);
-    }
-  }
-
-  function toggleItem(id: number) {
-    setExpandedItems((prev) => {
-      const newState = { ...prev };
-      Object.keys(newState).forEach((key) => {
-        if (parseInt(key) !== id) newState[parseInt(key)] = false;
-      });
-
-      newState[id] = !prev[id];
-
-      if (!prev[id]) {
-        setActiveNodeId(id);
-        setAutoRotate(false);
-
-        const relatedItems = getRelatedItems(id);
-        const newPulseEffect: Record<number, boolean> = {};
-        relatedItems.forEach((relId) => {
-          newPulseEffect[relId] = true;
-        });
-        setPulseEffect(newPulseEffect);
-        centerViewOnNode(id);
-      } else {
-        setActiveNodeId(null);
-        setAutoRotate(true);
-        setPulseEffect({});
-      }
-
-      return newState;
-    });
-  }
-
-  useEffect(() => {
-    if (!autoRotate) return;
-
-    const rotationTimer = setInterval(() => {
-      setRotationAngle((prev) => {
-        const newAngle = (prev + 0.3) % 360;
-        rotationAngleRef.current = newAngle;
-        return Number(newAngle.toFixed(3));
-      });
-    }, 50);
-
-    return () => clearInterval(rotationTimer);
-  }, [autoRotate, viewMode]);
-
-  function centerViewOnNode(nodeId: number) {
-    if (viewMode !== "orbital" || !nodeRefs.current[nodeId]) return;
-
-    const nodeIndex = timelineData.findIndex((item) => item.id === nodeId);
-    const totalNodes = timelineData.length;
-    const targetRotation = 270 - (nodeIndex / totalNodes) * 360;
-
-    setRotationAngle((prev) => {
-      const current = rotationAngleRef.current || prev;
-      let delta = targetRotation - current;
-
-      if (delta > 180) delta -= 360;
-      if (delta < -180) delta += 360;
-
-      const next = current + delta;
-      rotationAngleRef.current = next;
-      return next;
-    });
-  }
-
-  function calculateNodePosition(index: number, total: number) {
-    const angle = ((index / total) * 360 + rotationAngle) % 360;
-    const radius = orbitRadius;
-    const radian = (angle * Math.PI) / 180;
-
-    const x = radius * Math.cos(radian) + centerOffset.x;
-    const y = radius * Math.sin(radian) + centerOffset.y;
-
-    const zIndex = Math.round(100 + 50 * Math.cos(radian));
-    const opacity = Math.max(
-      0.82,
-      Math.min(1, 0.82 + 0.18 * ((1 + Math.sin(radian)) / 2)),
-    );
-
-    return { x, y, zIndex, opacity };
-  }
-
-  function getRelatedItems(itemId: number): number[] {
-    const currentItem = timelineData.find((item) => item.id === itemId);
-    return currentItem ? currentItem.relatedIds : [];
-  }
-
-  function isRelatedToActive(itemId: number): boolean {
-    if (!activeNodeId) return false;
-    return getRelatedItems(activeNodeId).includes(itemId);
-  }
-
-  const hasExpandedItem = Object.values(expandedItems).some(Boolean);
-  const orbitSize = orbitRadius * 2;
-  const isCompact = orbitRadius < 160;
-
   return (
-    <section className="relative w-full overflow-hidden bg-white py-10 md:py-16">
+    <section className="relative w-full overflow-hidden bg-white py-14 md:py-20">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-72 opacity-80"
+        style={{
+          background:
+            "radial-gradient(ellipse 70% 80% at 50% 0%, rgba(42,122,232,0.1) 0%, transparent 70%)",
+        }}
+      />
+
       <div className="relative mx-auto max-w-6xl px-4 md:px-6">
-        <div className="text-center">
+        <div className="mb-10 text-center md:mb-12">
           <SectionTag>What Fennix Does</SectionTag>
           <h2 className="mb-2 text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl md:text-6xl">
             Turn Questions Into{" "}
@@ -172,195 +281,8 @@ export default function RadialOrbitalTimeline({
           </p>
         </div>
 
-        <div
-          className="relative flex h-[min(72dvh,560px)] w-full items-center justify-center overflow-hidden sm:h-[min(78dvh,640px)] md:h-[min(85dvh,720px)]"
-          ref={containerRef}
-          onClick={handleContainerClick}
-        >
-          <div
-            className="pointer-events-none absolute rounded-full bg-[radial-gradient(circle,rgba(42,122,232,0.14)_0%,rgba(42,122,232,0.06)_45%,transparent_72%)]"
-            style={{
-              width: orbitSize * 1.15,
-              height: orbitSize * 1.15,
-            }}
-          />
-
-          <div className="relative flex h-full w-full max-w-4xl items-center justify-center">
-            <div
-              className="absolute flex h-full w-full items-center justify-center"
-              ref={orbitRef}
-              style={{
-                perspective: "1000px",
-                transform: `translate(${centerOffset.x}px, ${centerOffset.y}px)`,
-              }}
-            >
-              <div
-                className={`absolute z-1 flex items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-primary-light via-primary-mid to-primary-dark shadow-[0_0_40px_rgba(42,122,232,0.45)] transition-opacity duration-300 ${
-                  hasExpandedItem
-                    ? "pointer-events-none opacity-0"
-                    : "animate-pulse opacity-100"
-                } ${isCompact ? "h-14 w-14" : "h-20 w-20"}`}
-              >
-                <div
-                  className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 animate-ping rounded-full border-2 border-primary/40 opacity-80 ${
-                    isCompact ? "h-16 w-16" : "h-24 w-24"
-                  }`}
-                />
-                <div
-                  className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 animate-ping rounded-full border border-primary/25 opacity-60 ${
-                    isCompact ? "h-20 w-20" : "h-28 w-28"
-                  }`}
-                  style={{ animationDelay: "0.5s" }}
-                />
-                <div
-                  className={`relative z-10 rounded-full bg-white shadow-md ${
-                    isCompact ? "h-7 w-7" : "h-10 w-10"
-                  }`}
-                />
-              </div>
-
-              <div
-                className="absolute z-1 rounded-full border-2 border-primary/35 shadow-[inset_0_0_30px_rgba(42,122,232,0.08)]"
-                style={{ width: orbitSize, height: orbitSize }}
-              />
-
-              {timelineData.map((item, index) => {
-                const position = calculateNodePosition(
-                  index,
-                  timelineData.length,
-                );
-                const isExpanded = expandedItems[item.id];
-                const isRelated = isRelatedToActive(item.id);
-                const isPulsing = pulseEffect[item.id];
-                const Icon = item.icon;
-
-                const nodeStyle = {
-                  transform: `translate(${position.x}px, ${position.y}px)`,
-                  zIndex: isExpanded ? 200 : position.zIndex,
-                  opacity: isExpanded ? 1 : position.opacity,
-                };
-
-                return (
-                  <div
-                    key={item.id}
-                    ref={(el) => {
-                      nodeRefs.current[item.id] = el;
-                    }}
-                    className={`absolute z-20 cursor-pointer ${
-                      autoRotate ? "" : "transition-all duration-700 ease-out"
-                    }`}
-                    style={nodeStyle}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleItem(item.id);
-                    }}
-                  >
-                    <div
-                      className={`absolute -inset-1 rounded-full ${
-                        isPulsing ? "animate-pulse duration-1000" : ""
-                      }`}
-                      style={{
-                        background:
-                          "radial-gradient(circle, rgba(42,122,232,0.32) 0%, rgba(42,122,232,0.08) 55%, rgba(42,122,232,0) 72%)",
-                        width: isCompact ? "48px" : "64px",
-                        height: isCompact ? "48px" : "64px",
-                        left: isCompact ? "-8px" : "-12px",
-                        top: isCompact ? "-8px" : "-12px",
-                      }}
-                    />
-
-                    <div
-                      className={`
-                  flex items-center justify-center rounded-full
-                  ${isCompact ? "h-9 w-9" : "h-12 w-12"}
-                  ${
-                    isExpanded
-                      ? "bg-primary text-white"
-                      : isRelated
-                        ? "bg-primary/20 text-primary"
-                        : "bg-white text-primary"
-                  }
-                  border-2
-                  ${
-                    isExpanded
-                      ? "border-primary shadow-xl shadow-primary/35"
-                      : isRelated
-                        ? "animate-pulse border-primary shadow-md shadow-primary/20"
-                        : "border-primary/55 shadow-md shadow-primary/15"
-                  }
-                  transform transition-all duration-300
-                  ${isExpanded ? (isCompact ? "scale-125" : "scale-150") : ""}
-                `}
-                    >
-                      <Icon size={isCompact ? 15 : 18} strokeWidth={2.25} />
-                    </div>
-
-                    <div
-                      className={`
-                  absolute left-1/2 -translate-x-1/2 whitespace-nowrap
-                  font-bold tracking-wide
-                  transition-all duration-300
-                  ${isCompact ? "top-11 text-[11px]" : "top-14 text-sm"}
-                  ${
-                    isExpanded
-                      ? "pointer-events-none scale-95 opacity-0"
-                      : "text-zinc-700"
-                  }
-                `}
-                    >
-                      {item.title}
-                    </div>
-
-                    {isExpanded && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -8, scale: 0.97 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        transition={{
-                          duration: 0.32,
-                          ease: [0.22, 1, 0.36, 1],
-                        }}
-                        className="absolute top-[4.5rem] left-1/2 z-30 w-[min(19rem,calc(100vw-2rem))] -translate-x-1/2"
-                      >
-                        <div
-                          aria-hidden
-                          className="mx-auto mb-0 h-2.5 w-px bg-linear-to-b from-primary/40 to-transparent"
-                        />
-
-                        <div className="relative overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-[0_18px_40px_-18px_rgba(6,27,49,0.28),0_0_0_1px_rgba(20,86,168,0.04)]">
-                          <div
-                            aria-hidden
-                            className="h-[3px] w-full"
-                            style={{ background: "var(--gradient-primary)" }}
-                          />
-
-                          <div className="p-3 sm:p-5">
-                            <div className="mb-2 flex items-center gap-2.5 sm:mb-3 sm:gap-3">
-                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[linear-gradient(145deg,#1456a8_0%,#0c4a8c_55%,#061b31_100%)] text-white shadow-sm sm:h-9 sm:w-9">
-                                <Icon size={isCompact ? 14 : 16} strokeWidth={2.25} />
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary/70">
-                                  Capability {String(index + 1).padStart(2, "0")}
-                                </p>
-                                <h4 className="truncate text-[14px] font-semibold tracking-tight text-zinc-900 sm:text-[15px]">
-                                  {item.title}
-                                </h4>
-                              </div>
-                            </div>
-
-                            <p className="text-[12px] leading-relaxed text-zinc-500 sm:text-[13px]">
-                              {item.content}
-                            </p>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
+        <DesktopStrip timelineData={timelineData} />
+        <MobileAccordion timelineData={timelineData} />
       </div>
     </section>
   );

@@ -11,8 +11,8 @@ const funnelData = [
     description:
       "Continuously scans fragmented data to identify hidden patterns, unusual spikes, and anomalies that signal operational or financial shifts early.",
     gradient: [
-      { offset: "0%", color: "#1456A8" },
-      { offset: "100%", color: "#0B3F7D" },
+      { offset: "0%", color: "#0d2f54" },
+      { offset: "100%", color: "#0a2745" },
     ],
   },
   {
@@ -22,8 +22,8 @@ const funnelData = [
     description:
       "Projects future financial and operational outcomes based on current trends, connecting drivers, risks, and business performance in real time.",
     gradient: [
-      { offset: "0%", color: "#1D67C2" },
-      { offset: "100%", color: "#1456A8" },
+      { offset: "0%", color: "#0a2745" },
+      { offset: "100%", color: "#08203a" },
     ],
   },
   {
@@ -33,8 +33,8 @@ const funnelData = [
     description:
       "Anticipates potential risks and growth opportunities by analyzing internal metrics and external market signals before they become visible.",
     gradient: [
-      { offset: "0%", color: "#2875D6" },
-      { offset: "100%", color: "#1D67C2" },
+      { offset: "0%", color: "#08203a" },
+      { offset: "100%", color: "#061b31" },
     ],
   },
   {
@@ -44,8 +44,8 @@ const funnelData = [
     description:
       "Delivers real-time, context-aware recommendations so leaders can act faster with clarity on what to do next and why it matters.",
     gradient: [
-      { offset: "0%", color: "#3A86E4" },
-      { offset: "100%", color: "#2875D6" },
+      { offset: "0%", color: "#061b31" },
+      { offset: "100%", color: "#051627" },
     ],
   },
   {
@@ -55,8 +55,8 @@ const funnelData = [
     description:
       "Follows every action after it ships—so teams know whether risk is closing, compounding, or needs a new decision cycle.",
     gradient: [
-      { offset: "0%", color: "#5A9EF0" },
-      { offset: "100%", color: "#3A86E4" },
+      { offset: "0%", color: "#051627" },
+      { offset: "100%", color: "#04111f" },
     ],
   },
 ];
@@ -81,7 +81,7 @@ export default function IntelligenceFunnelSection() {
           <FunnelChart
             className="mx-auto w-full max-w-5xl overflow-visible"
             data={funnelData}
-            color="#1456A8"
+            color="#0a2745"
             edges="curved"
             gap={8}
             showValues={false}
@@ -104,7 +104,7 @@ export default function IntelligenceFunnelSection() {
                 background={color}
                 id={id}
                 orientation={["diagonal"]}
-                stroke="rgba(255,255,255,0.35)"
+                stroke="rgba(143,184,245,0.22)"
                 strokeWidth={0.8}
                 width={10}
                 height={10}
