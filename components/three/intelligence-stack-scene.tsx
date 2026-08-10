@@ -33,11 +33,11 @@ const FADE_OUT_START = 0.6;
 const FADE_OUT_END = 1.1;
 const CORNER_OFFSET = 0.4;
 
-const ROTATION_SMOOTHING_PER_SEC = 4.2;
-const MAX_ANGULAR_VELOCITY = ANGLE_STEP * 2.2;
+const ROTATION_SMOOTHING_PER_SEC = 7.5;
+const MAX_ANGULAR_VELOCITY = ANGLE_STEP * 5.5;
 const ROTATION_MIN = -ANGLE_STEP * (BLOCKS.length - 1);
 const ROTATION_MAX = 0;
-const SNAP_EPSILON = 0.0004;
+const SNAP_EPSILON = 0.00025;
 
 function createBrandGradientTexture() {
   const canvas = document.createElement("canvas");
@@ -361,13 +361,15 @@ export function IntelligenceStackScene({
 
     const diff = targetY - rotationYRef.current;
 
+    // Critically-damped style catch-up — keep pace with Lenis without hard snaps
     const smoothingFactor = 1 - Math.exp(-ROTATION_SMOOTHING_PER_SEC * dt);
     let step = diff * smoothingFactor;
 
     const maxStep = MAX_ANGULAR_VELOCITY * dt;
-    if (Math.abs(step) > maxStep) {
-      step = Math.sign(step) * maxStep;
-    }
+    if (Math.abs(step) > maxStep) step = Math.sign(step) * maxStep;
+
+    // Ease residual so it never micro-jitters near target
+    if (Math.abs(diff) < 0.012) step = diff * Math.min(1, smoothingFactor * 1.35);
 
     rotationYRef.current += step;
 

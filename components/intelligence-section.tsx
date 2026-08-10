@@ -1,23 +1,26 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { IntelligenceStackVisual } from "@/components/three";
 import { getLenisInstance } from "@/components/scroll/lenis-instance";
 import { SectionTag } from "@/components/ui/section-tag";
-import {
-  INTELLIGENCE_LAYERS,
-  IntelligenceLayerContent,
-} from "./three/unified-data-layer-scene";
+import { INTELLIGENCE_LAYERS } from "./three/unified-data-layer-scene";
 import { cn } from "@/lib/utils";
 
-const SMOOTHING = 0.08;
+/** Exponential progress catch-up (1/sec). Higher = snappier, still smooth. */
+const PROGRESS_SMOOTHING = 14;
 const STACK_TOP_RATIO = 0.14;
 const STACK_BOTTOM_RATIO = 0.86;
 const STACK_RIGHT_RATIO = 0.56;
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
+}
+
+function smoothstep(t: number) {
+  const x = clamp(t, 0, 1);
+  return x * x * (3 - 2 * x);
 }
 
 interface ConnectorPoints {
@@ -32,23 +35,61 @@ export default function IntelligenceSection() {
   const gridRef = useRef<HTMLDivElement>(null);
   const canvasWrapRef = useRef<HTMLDivElement>(null);
   const cardHeaderRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const targetProgressRef = useRef(0);
   const smoothProgressRef = useRef(0);
+  const lastFrameTimeRef = useRef<number | null>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [connector, setConnector] = useState<ConnectorPoints | null>(null);
 
   useEffect(() => {
     let rafId = 0;
 
-    const tick = () => {
+    const tick = (time: number) => {
+      const last = lastFrameTimeRef.current ?? time;
+      const dt = Math.min((time - last) / 1000, 1 / 30);
+      lastFrameTimeRef.current = time;
+
       const current = smoothProgressRef.current;
       const target = targetProgressRef.current;
-      const next = current + (target - current) * SMOOTHING;
+      const factor = 1 - Math.exp(-PROGRESS_SMOOTHING * dt);
+      const next =
+        Math.abs(target - current) < 0.0004
+          ? target
+          : current + (target - current) * factor;
 
-      if (Math.abs(next - target) < 0.0005) smoothProgressRef.current = target;
-      else smoothProgressRef.current = next;
+      smoothProgressRef.current = next;
+      setScrollProgress(next);
 
-      setScrollProgress(smoothProgressRef.current);
+      const layerCount = INTELLIGENCE_LAYERS.length;
+      // Continuous blend across layers — no discrete switch / Framer queue
+      const raw = clamp(next * layerCount, 0, layerCount - 1.0001);
+      const i0 = Math.floor(raw);
+      const i1 = Math.min(i0 + 1, layerCount - 1);
+      const blend = smoothstep(raw - i0);
+
+      for (let i = 0; i < layerCount; i++) {
+        const el = cardRefs.current[i];
+        if (!el) continue;
+
+        let opacity = 0;
+        let y = 0;
+        if (i === i0 && i0 === i1) {
+          opacity = 1;
+        } else if (i === i0) {
+          opacity = 1 - blend;
+          y = -10 * blend;
+        } else if (i === i1) {
+          opacity = blend;
+          y = 10 * (1 - blend);
+        }
+
+        el.style.opacity = String(opacity);
+        el.style.transform = `translate3d(0, ${y.toFixed(2)}px, 0)`;
+        el.style.zIndex = opacity > 0.5 ? "2" : "1";
+        el.style.pointerEvents = opacity > 0.55 ? "auto" : "none";
+        el.setAttribute("aria-hidden", opacity > 0.55 ? "false" : "true");
+      }
 
       const grid = gridRef.current;
       const canvasWrap = canvasWrapRef.current;
@@ -59,13 +100,9 @@ export default function IntelligenceSection() {
         const canvasRect = canvasWrap.getBoundingClientRect();
         const headerRect = cardHeader.getBoundingClientRect();
 
-        const continuousIndex = clamp(
-          smoothProgressRef.current * INTELLIGENCE_LAYERS.length,
-          0,
-          INTELLIGENCE_LAYERS.length - 1,
-        );
+        const continuousIndex = clamp(raw, 0, layerCount - 1);
         const layerFraction =
-          (continuousIndex + 0.5) / INTELLIGENCE_LAYERS.length;
+          (continuousIndex + 0.5) / layerCount;
         const yRatio =
           STACK_TOP_RATIO +
           layerFraction * (STACK_BOTTOM_RATIO - STACK_TOP_RATIO);
@@ -81,25 +118,28 @@ export default function IntelligenceSection() {
         setConnector((prev) => {
           if (
             prev &&
-            Math.abs(prev.x1 - x1) < 0.5 &&
-            Math.abs(prev.y1 - y1) < 0.5 &&
-            Math.abs(prev.x2 - x2) < 0.5 &&
-            Math.abs(prev.y2 - y2) < 0.5
+            Math.abs(prev.x1 - x1) < 0.75 &&
+            Math.abs(prev.y1 - y1) < 0.75 &&
+            Math.abs(prev.x2 - x2) < 0.75 &&
+            Math.abs(prev.y2 - y2) < 0.75
           ) {
             return prev;
           }
           return { x1, y1, x2, y2 };
         });
-      } else if (connector !== null) {
-        setConnector(null);
+      } else {
+        setConnector((prev) => (prev === null ? prev : null));
       }
 
       rafId = requestAnimationFrame(tick);
     };
 
     rafId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafId);
-  }, [connector]);
+    return () => {
+      cancelAnimationFrame(rafId);
+      lastFrameTimeRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     const track = trackRef.current;
@@ -139,18 +179,6 @@ export default function IntelligenceSection() {
     };
   }, []);
 
-  const activeIndex = useMemo(
-    () =>
-      clamp(
-        Math.floor(scrollProgress * INTELLIGENCE_LAYERS.length),
-        0,
-        INTELLIGENCE_LAYERS.length - 1,
-      ),
-    [scrollProgress],
-  );
-
-  const activeLayer = INTELLIGENCE_LAYERS[activeIndex];
-
   const pathD = connector
     ? `M ${connector.x1} ${connector.y1} C ${
         connector.x1 + (connector.x2 - connector.x1) * 0.4
@@ -164,11 +192,11 @@ export default function IntelligenceSection() {
       <div className="sticky top-0 z-20 flex h-screen flex-col overflow-visible">
         <div className="relative z-10 mx-auto w-full max-w-3xl shrink-0 px-4 pt-16 text-center sm:pt-20 md:pt-24">
           <SectionTag>Unified intelligence</SectionTag>
-          <h2 className="mb-2 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl md:text-5xl lg:text-6xl">
+          <h2 className="mb-2 font-display text-3xl font-semibold tracking-tight text-cream sm:text-4xl md:text-5xl lg:text-6xl">
             Data layers into{" "}
             <span className="text-primary-gradient">one model</span>
           </h2>
-          <p className="mx-auto max-w-xl text-sm text-zinc-500 md:text-base">
+          <p className="mx-auto max-w-xl text-sm text-cream-muted md:text-base">
             Fennix Decision Intelligence is a platform that helps you make
             better decisions.
           </p>
@@ -178,7 +206,7 @@ export default function IntelligenceSection() {
           ref={gridRef}
           className="relative z-10 grid min-h-0 flex-1 grid-cols-1 items-center gap-2 overflow-visible px-4 pb-6 pt-2 sm:gap-4 sm:pb-8 sm:pt-4 lg:grid-cols-2 lg:gap-8 lg:px-8"
         >
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 z-0 h-120 -translate-y-1/2 bg-[radial-gradient(ellipse_at_center,#dbeafe_0%,transparent_70%)] opacity-70" />
+          <div className="pointer-events-none absolute inset-x-0 top-1/2 z-0 h-120 -translate-y-1/2 bg-[radial-gradient(ellipse_at_center,rgba(42,122,232,0.18)_0%,transparent_70%)] opacity-70" />
 
           {connector ? (
             <svg
@@ -309,45 +337,67 @@ export default function IntelligenceSection() {
 
           <div className="relative z-30 flex h-auto min-h-0 w-full items-center justify-center px-1 lg:h-full">
             <div className="relative z-30 w-full max-w-md overflow-visible">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeLayer.label}
-                  initial={{ opacity: 0, y: 24, filter: "blur(8px)" }}
-                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, y: -24, filter: "blur(8px)" }}
-                  transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                  className="relative z-30 rounded-lg border border-zinc-200/70 bg-white/95 px-3 py-0 shadow-[0_8px_30px_rgba(15,23,42,0.12)] backdrop-blur-md sm:rounded-2xl sm:px-4 sm:py-1 md:px-5 md:py-3"
-                >
-                  <div ref={cardHeaderRef}>
-                    <span className="text-[9px] sm:text-[11px] md:text-xs font-medium uppercase tracking-wider text-primary">
-                      {activeLayer.eyebrow}
-                    </span>
+              {/*
+                Continuous scroll-driven crossfade (DOM styles in rAF).
+                No Framer AnimatePresence — avoids queued jerks on fast scroll.
+              */}
+              <div className="relative min-h-[11.5rem] sm:min-h-[13rem] md:min-h-[15rem]">
+                {/* Stable connector anchor (doesn't jump between cards) */}
+                <div
+                  ref={cardHeaderRef}
+                  className="pointer-events-none absolute left-5 top-5 h-6 w-px opacity-0"
+                  aria-hidden
+                />
 
-                    <h3 className="mt-0 sm:mt-1 text-sm sm:text-base md:text-xl font-semibold tracking-tight text-zinc-900">
-                      {activeLayer.title}
-                    </h3>
+                {INTELLIGENCE_LAYERS.map((layer, index) => (
+                  <div
+                    key={layer.label}
+                    ref={(el) => {
+                      cardRefs.current[index] = el;
+                    }}
+                    className={cn(
+                      "rounded-lg border border-white/10 bg-surface-raised/95 px-3 py-2 shadow-[0_8px_30px_rgba(2,8,20,0.45)] backdrop-blur-md will-change-[opacity,transform] sm:rounded-2xl sm:px-4 sm:py-3 md:px-5 md:py-4",
+                      index === 0 ? "relative" : "absolute inset-0",
+                    )}
+                    style={{
+                      opacity: index === 0 ? 1 : 0,
+                      transform: "translate3d(0, 0, 0)",
+                    }}
+                    aria-hidden={index !== 0}
+                  >
+                    <div>
+                      <span className="text-[9px] font-medium uppercase tracking-wider text-[#93c5fd] sm:text-[11px] md:text-xs">
+                        {layer.eyebrow}
+                      </span>
+
+                      <h3 className="mt-0 text-sm font-semibold tracking-tight text-cream sm:mt-1 sm:text-base md:text-xl">
+                        {layer.title}
+                      </h3>
+                    </div>
+
+                    <p className="mt-0.5 text-[10px] leading-relaxed text-cream-muted sm:mt-1 sm:text-xs md:text-sm">
+                      {layer.description}
+                    </p>
+
+                    <ul className="mt-1 space-y-1 sm:space-y-1.5 md:mt-2">
+                      {layer.points.map((point) => (
+                        <li
+                          key={point}
+                          className="flex items-center gap-1 text-[9px] text-cream-muted sm:gap-1.5 sm:text-xs md:gap-2.5 md:text-sm"
+                        >
+                          <span
+                            aria-hidden
+                            className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
+                          />
+                          <span className="leading-snug text-cream/90">
+                            {point}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-
-                  <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs md:text-sm leading-relaxed text-zinc-600">
-                    {activeLayer.description}
-                  </p>
-
-                  <ul className="mt-1 md:mt-2 space-y-1 sm:space-y-1.5">
-                    {activeLayer.points.map((point) => (
-                      <li
-                        key={point}
-                        className="flex items-center gap-1 sm:gap-1.5 md:gap-2.5 text-[9px] sm:text-xs md:text-sm text-zinc-700"
-                      >
-                        <span
-                          aria-hidden
-                          className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
-                        />
-                        <span className="leading-snug">{point}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </motion.div>
-              </AnimatePresence>
+                ))}
+              </div>
             </div>
           </div>
         </div>
