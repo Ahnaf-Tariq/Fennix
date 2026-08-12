@@ -158,7 +158,7 @@ function EasyToGetStarted() {
   return (
     <section
       id="how-it-works"
-      className="relative w-full scroll-mt-28 overflow-hidden bg-white pb-20 pt-10"
+      className="relative w-full scroll-mt-28 overflow-hidden bg-white py-20 md:py-24"
     >
       <div className="relative mx-auto max-w-6xl px-4 md:px-6">
         <div className="mb-10 text-center md:mb-14">

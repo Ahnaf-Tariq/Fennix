@@ -63,7 +63,7 @@ const funnelData = [
 
 export default function IntelligenceFunnelSection() {
   return (
-    <section className="relative overflow-visible bg-white py-18 sm:py-24">
+    <section className="relative overflow-visible bg-white py-20 md:py-24">
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
         <div className="mx-auto mb-8 max-w-3xl text-center sm:mb-10">
           <SectionTag>Anomaly Detection</SectionTag>

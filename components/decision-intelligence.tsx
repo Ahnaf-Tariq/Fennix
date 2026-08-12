@@ -75,7 +75,7 @@ export default function DecisionIntelligence() {
 
   return (
     <>
-      <section className="bg-white py-16 lg:hidden">
+      <section className="bg-white py-20 md:py-24 lg:hidden">
         <div className="mx-auto w-full max-w-7xl px-4 md:px-6">
           <div className="mb-8 space-y-4 text-center">
             <SectionTag className="mx-auto mb-0">Our Features</SectionTag>
@@ -97,9 +97,10 @@ export default function DecisionIntelligence() {
         </div>
       </section>
 
+      <section className="hidden bg-white py-20 md:py-24 lg:block">
       <div
         ref={containerRef}
-        className="relative hidden h-[250vh] bg-white lg:block"
+        className="relative h-[250vh]"
       >
         <div className="sticky top-0 flex h-screen w-full flex-col items-center justify-center overflow-hidden">
           <div className="mx-auto w-full max-w-7xl px-4 md:px-6">
@@ -133,6 +134,7 @@ export default function DecisionIntelligence() {
           </div>
         </div>
       </div>
+      </section>
     </>
   );
 }

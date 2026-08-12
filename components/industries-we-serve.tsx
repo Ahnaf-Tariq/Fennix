@@ -61,7 +61,7 @@ export default function IndustriesWeServe() {
   return (
     <section
       id="industries"
-      className="relative w-full scroll-mt-28 overflow-hidden bg-white py-20 md:py-28"
+      className="relative w-full scroll-mt-28 overflow-hidden bg-white py-20 md:py-24"
     >
       <div className="relative mx-auto max-w-7xl px-4 md:px-6">
         <div className="flex flex-col-reverse items-center gap-14 lg:flex-row lg:items-center lg:gap-16">

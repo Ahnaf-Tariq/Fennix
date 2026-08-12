@@ -5,6 +5,7 @@ import { SplineScene } from "@/components/ui/splite";
 import { Spotlight } from "@/components/ui/spotlight";
 import { onSplashComplete } from "@/lib/splash-lifecycle";
 import { HeroWalkthrough } from "./hero-walkthrough";
+import { useRouter } from "next/navigation";
 
 const SPLINE_SCENE =
   "https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode";
@@ -46,6 +47,7 @@ function HeroAbstractPattern() {
 }
 
 export default function Hero() {
+  const router = useRouter();
   const [isRobotMounted, setIsRobotMounted] = useState(false);
   const [isHeroRevealed, setIsHeroRevealed] = useState(false);
 
@@ -128,6 +130,7 @@ export default function Hero() {
             <div className="mt-5 flex flex-wrap items-center gap-2 sm:mt-8 sm:gap-2.5">
               <button
                 type="button"
+                onClick={() => router.push("/contact")}
                 className="btn-primary btn-glass-shimmer px-3.5 py-2 text-xs sm:px-4 sm:text-sm"
               >
                 Start Your 30-Day Pilot

@@ -257,7 +257,7 @@ export default function RadialOrbitalTimeline({
   timelineData,
 }: RadialOrbitalTimelineProps) {
   return (
-    <section className="relative w-full overflow-hidden bg-white py-14 md:py-20">
+    <section className="relative w-full overflow-hidden bg-white py-20 md:py-24">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-72 opacity-80"

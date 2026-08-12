@@ -87,7 +87,7 @@ export function Slider() {
       <section
         ref={sectionRef}
         id="logo-slider"
-        className="relative mb-8 overflow-hidden bg-[#f8f9fa] py-6"
+        className="relative overflow-hidden bg-[#f8f9fa] py-6"
       >
         <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-linear-to-r from-[#f8f9fa] to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-linear-to-l from-[#f8f9fa] to-transparent" />

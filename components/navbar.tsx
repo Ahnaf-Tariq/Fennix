@@ -3,12 +3,13 @@
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { NAV_LINKS } from "@/Data/data";
 import { cn } from "@/lib/utils";
 
 const Navbar = () => {
+  const router = useRouter();
   const pathname = usePathname();
   const isHome = pathname === "/";
   const [isPastHero, setIsPastHero] = useState(!isHome);
@@ -105,6 +106,7 @@ const Navbar = () => {
         <div className="relative z-10 flex items-center gap-2">
           <button
             type="button"
+            onClick={() => router.push("/contact")}
             className={cn(
               "btn-primary btn-glass-shimmer group hidden items-center gap-2 px-4 py-2.5 lg:inline-flex",
               isPastHero && "shadow-[0_12px_28px_-14px_rgba(20,86,168,0.65)]",

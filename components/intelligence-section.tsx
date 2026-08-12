@@ -31,7 +31,7 @@ interface ConnectorPoints {
 }
 
 export default function IntelligenceSection() {
-  const trackRef = useRef<HTMLElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const canvasWrapRef = useRef<HTMLDivElement>(null);
   const cardHeaderRef = useRef<HTMLDivElement>(null);
@@ -101,8 +101,7 @@ export default function IntelligenceSection() {
         const headerRect = cardHeader.getBoundingClientRect();
 
         const continuousIndex = clamp(raw, 0, layerCount - 1);
-        const layerFraction =
-          (continuousIndex + 0.5) / layerCount;
+        const layerFraction = (continuousIndex + 0.5) / layerCount;
         const yRatio =
           STACK_TOP_RATIO +
           layerFraction * (STACK_BOTTOM_RATIO - STACK_TOP_RATIO);
@@ -188,7 +187,8 @@ export default function IntelligenceSection() {
     : "";
 
   return (
-    <section ref={trackRef} className="relative z-20 h-[260vh] lg:h-[220vh]">
+    <section className="relative z-20 py-20 md:py-24">
+      <div ref={trackRef} className="h-[260vh] lg:h-[220vh]">
       <div className="sticky top-0 z-20 flex h-screen flex-col overflow-visible">
         <div className="relative z-10 mx-auto w-full max-w-3xl shrink-0 px-4 pt-16 text-center sm:pt-20 md:pt-24">
           <SectionTag>Unified intelligence</SectionTag>
@@ -424,6 +424,7 @@ export default function IntelligenceSection() {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </section>
   );
